@@ -1,6 +1,6 @@
 {
-  "name": "Vinci Spring 2025",
-  "description": "Site pour la matériel de cours Introduction à Spring à la HE Vinci",
+  "name": "Vinci Flutter 2025",
+  "description": "Site pour la matériel de cours Introduction à Flutter à la HE Vinci",
   "url": "https://eleventyduo.netlify.app",
   "author": {
     "name": "Martin Van Aken",
@@ -31,8 +31,8 @@
       "external": true
     },
     {
-      "text": "Documentation Spring",
-      "url": "https://docs.spring.io",
+      "text": "Documentation Flutter",
+      "url": "https://flutter.dev/",
       "external": true
     }
   ],
