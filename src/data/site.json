@@ -1,0 +1,47 @@
+{
+  "name": "Vinci Spring 2025",
+  "description": "Site pour la matériel de cours Introduction à Spring à la HE Vinci",
+  "url": "https://eleventyduo.netlify.app",
+  "author": {
+    "name": "Martin Van Aken",
+    "email": "martin.vanaken@vinci.be"
+  },
+  "defaultSocialImage": "/images/default-social-image.png",
+  "headerLinks": [
+    {
+      "text": "Fiches",
+      "url": "/blog",
+      "external": false
+    },
+    {
+      "text": "A propos",
+      "url": "/about",
+      "external": false
+    }
+  ],
+  "socialLinks": [
+    {
+      "text": "Site de l'école",
+      "url": "https://vinci.be/",
+      "external": true
+    },
+    {
+      "text": "Moddle",
+      "url": "https://moodle.vinci.be/",
+      "external": true
+    },
+    {
+      "text": "Documentation Spring",
+      "url": "https://docs.spring.io",
+      "external": true
+    }
+  ],
+  "footerLinks": [
+    {
+      "text": "RSS",
+      "url": "/feed.xml",
+      "external": true
+    }
+  ],
+  "showFooterAttribution": true
+}
