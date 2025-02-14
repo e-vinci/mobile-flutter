@@ -20,9 +20,9 @@ Si vous utilisez votre propre machine et que ça n’est pas déjà fait, rendez
 
 Suivez les instructions pour l’installation de Flutter selon votre plateforme (Windows/macOS/Linux) et pour un développement mobile/android, le développement web fonctionnera également. 
 
-Comme IDE, nous recommandons l’utilisation d’Android Studio. Suivez le lien dans les instructions pour l’installer. Vous devrez également y installer le plugin flutter.
+Comme IDE, nous recommandons l’utilisation d’Android Studio. Suivez le lien dans les instructions pour l’installer. _Vous devrez également y installer le plugin flutter_.
 
-Pour l’installation du Flutter SDK, choisissez l’onglet Download and Install plutôt que Use VS Code to install. À l’étape Configure your target Android device, installez le SDK Android 14.0, API Level 34, et choisissez un device récent comme le Pixel 7 Pro.
+Pour l’installation du Flutter SDK, choisissez l’onglet Download and Install plutôt que Use VS Code to install. À l’étape Configure your target Android device, installez le SDK Android 14.0, API Level 35, et choisissez un device récent comme le Pixel 7 Pro.
 
 Lors de la vérification de l’installation avec flutter doctor sur Windows, il est probable que vous ayez ce « problème » identifié :
 
@@ -35,6 +35,12 @@ Si vous avez ce souci identifié par flutter doctor :
     X Unable to find bundled Java version.
 
 La résolution est offerte sur [stack overflow](https://stackoverflow.com/questions/75115909/flutter-android-studio-version-2022-1-x-unable-to-find-bundled-java-versio/75125986).
+
+Si vous avez ce souci identifié par flutter doctor :
+
+> Android sdkmanager not found. Update to the latest Android SDK and ensure that the cmdline-tools are installed to resolve this
+
+La résolution est offerte sur [stack overflow](https://stackoverflow.com/questions/70719767/android-sdkmanager-not-found-update-to-the-latest-android-sdk-and-ensure-that-t)
 
 ## PC IPL
 
@@ -240,7 +246,9 @@ const SizedBox(width: 16),
 Image.asset('images/iphone.jpg', width: 150),
 ```
 
-Si vous essayez de réafficher l’application à cette étape avec un _Hot Reload_, vous pourrez observer une erreur d’overflow dans votre application. Flutter n’arrive pas à deviner la taille que doit prendre les différents éléments au sein de la `Row` que nous venons de rajouter. 
+Si vous essayez de réafficher l’application à cette étape avec un _Hot Reload_, vous obtiendrez une erreur liée à l'image qui n'est pas disponible. Il est nécessaire d'arrêter et de relancez l'application après avoir ajouté une image, pour qu'elle soit correctement disponible. 
+
+Même après avoir résolu cette erreur, vous pourrez observer une erreur d’overflow dans votre application. Flutter n’arrive pas à deviner la taille que doit prendre les différents éléments au sein de la `Row` que nous venons de rajouter. 
 
 La `SizedBox` et l’`Image` ont une largeur fixée. Il est possible de faire en sorte que la `Column` prenne le reste de la largeur disponible (500 pixels au total via la SizedBox), en l’entourant d’un widget `Expanded`. Ce widget permet de faire qu’un enfant d’une `Row` ou une `Column` remplisse l’espace restant suivant les autres enfants. Utilisez l’option _Wrap with widget…_ en sélectionnant la `Column` et écrivez ensuite `Expanded` comme widget.
 
