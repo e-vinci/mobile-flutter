@@ -22,7 +22,7 @@ Suivez les instructions pour l’installation de Flutter selon votre plateforme 
 
 Comme IDE, nous recommandons l’utilisation d’Android Studio. Suivez le lien dans les instructions pour l’installer. _Vous devrez également y installer le plugin flutter_.
 
-Pour l’installation du Flutter SDK, choisissez l’onglet Download and Install plutôt que Use VS Code to install. À l’étape Configure your target Android device, installez le SDK Android 14.0, API Level 35, et choisissez un device récent comme le Pixel 7 Pro.
+Pour l’installation du Flutter SDK, choisissez l’onglet Download and Install plutôt que Use VS Code to install. À l’étape Configure your target Android device, installez le SDK Android 15.0, API Level 35, et choisissez un device récent comme le Pixel 7 Pro.
 
 Lors de la vérification de l’installation avec flutter doctor sur Windows, il est probable que vous ayez ce « problème » identifié :
 
@@ -59,7 +59,11 @@ Cliquez sur l’URL de votre web repo. GitHub vous offre les instructions pour c
 
 C’est ce dossier que vous allez transformer en repo local en le liant à votre GitHub repo. Entrez dans ce dossier à l’aide de Git Bash. Vous pouvez ensuite tapez les commandes offertes par votre GitHub repo sous "…or create a new repository on the command line".
 
-Pour chaque exercice, faites attention à créer un nouveau projet au sein d’un dossier dans ce repository (se trouvant dans votre dossier mobile ou autre) sur votre machine. Vous pourrez de cette façon utiliser l’interface de Android studio pour effectuer des commits et des push. Nous vous demanderons à plusieurs moments au sein des fiches du cours de faire des commits sur ce repository avec un tag _Commit:_ `message de commit`. Cela nous permettra de vérifier l’état de votre avancement dans la matière du cours, ou de vous aider en accédant à votre code si nécessaire. 
+Pour chaque exercice, faites attention à créer un nouveau projet au sein d’un dossier dans ce repository (se trouvant dans votre dossier mobile ou autre) sur votre machine. Vous pourrez de cette façon utiliser l’interface de Android studio pour effectuer des commits et des push. Nous vous demanderons à plusieurs moments au sein des fiches du cours de faire des commits sur ce repository avec un tag : 
+
+> Commit: `message de commit`
+
+Cela nous permettra de vérifier l’état de votre avancement dans la matière du cours, ou de vous aider en accédant à votre code si nécessaire. 
 
 Pour cette raison, nous vous demandons de bien vouloir suivre les messages de commits demandés. Vous pouvez faire d’autres commits intermédiaires si vous le souhaitez, mais nous nous attendons à retrouver ceux-là au minimum. Faites particulièrement attention aux commits correspondant à des objectifs du cours, dont le message commence par FXY.
 
@@ -75,7 +79,7 @@ Pour avoir une introduction à Flutter, veuillez :
 
 Nous vous avons présenté notre Dart CheatSheet. Celle-ci se trouve sur Moodle.
 
-Toutefois si vous voulez avoir une vue plus détaillée du langage avant de commencer ou si durant la fiche vous aimeriez en savoir plus sur certaines constructions, rendez-vous sur le [language-tour](https://dart.dev/guides/language/language-tour). 
+Toutefois si vous voulez avoir une vue plus détaillée du langage avant de commencer ou si durant la fiche vous aimeriez en savoir plus sur certaines constructions, rendez-vous sur le [language-tour](https://dart.dev/language). 
 
 # Concepts
 
