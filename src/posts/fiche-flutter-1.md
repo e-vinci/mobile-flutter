@@ -29,6 +29,7 @@ Lors de la vérification de l’installation avec flutter doctor sur Windows, il
 > [X] Visual Studio - develop for Windows
 
 Nous vous proposons de ne pas résoudre ce « problème ». En effet, il n’est pas nécessaire de déployer nos applications Mobile en tant qu’application de bureau Windows. 
+
 Si vous avez ce souci identifié par flutter doctor :
 
 > [!] Android Studio (version XX.X)
@@ -40,7 +41,7 @@ Si vous avez ce souci identifié par flutter doctor :
 
 > Android sdkmanager not found. Update to the latest Android SDK and ensure that the cmdline-tools are installed to resolve this
 
-La résolution est offerte sur [stack overflow](https://stackoverflow.com/questions/70719767/android-sdkmanager-not-found-update-to-the-latest-android-sdk-and-ensure-that-t)
+La résolution est offerte sur [stack overflow](https://stackoverflow.com/questions/70719767/android-sdkmanager-not-found-update-to-the-latest-android-sdk-and-ensure-that-t).
 
 ## PC IPL
 
