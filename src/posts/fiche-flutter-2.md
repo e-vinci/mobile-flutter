@@ -41,7 +41,7 @@ La classe `MyHomePage` étend la classe `StatefulWidget` au lieu de `StatelessWi
 
 La classe `_MyHomePageState` possède elle bien une méthode `build` similaire à celles que nous avons pu voir dans les `StatelessWidget`. Ce widget affiche un `Scaffold` présentant une barre de titre, du texte au centre de l’écran, et un `floatingActionButton` – un style de bouton définit dans les principes Material Design de Google présentant l’action principale d’une page. 
 
-La `HomePage` possède deux variables, une définie dans la classe `MyHomePage` et l’autre dans la classe `_MyHomePageState`. Au sein de la classe héritant de `StatefulWidget`, nous pouvons retrouver des variables immuables (toujours marquées `final`) passées en paramètre, tel que nous avons pu le voir dans les `StatelessWidget`. Nous pouvons les utiliser dans la méthode `build` de la classe héritant de `State` avec l’objet `widget` tel que montré avec `widget.title` à la ligne 76. Au sein de cette classe `State`, nous pouvons également définir des variables destinées à changer durant l’exécution du programme. 
+La `HomePage` possède deux variables, une définie dans la classe `MyHomePage` et l’autre dans la classe `_MyHomePageState`. Au sein de la classe héritant de `StatefulWidget`, nous pouvons retrouver des variables immuables (toujours marquées `final`) passées en paramètre, tel que nous avons pu le voir dans les `StatelessWidget`. Nous pouvons les utiliser dans la méthode `build` de la classe héritant de `State` avec l’objet `widget` tel que montré avec `widget.title` à la ligne 86. Au sein de cette classe `State`, nous pouvons également définir des variables destinées à changer durant l’exécution du programme. 
 
 Dans le widget `HomePage`, la variable `_counter`  est initialisée à `0`, et elle pourra être incrémentée durant l’exécution du programme. Lorsque l’utilisateur appuie sur le floating action button, le programme fait appel à la méthode `_incrementCounter` grâce à l’argument `onPressed`. Dans cette méthode, on retrouve un appel à une méthode `setState`. L’objectif de cette méthode est de notifier à l’application que l’état du widget est modifié. Elle prend un argument une méthode au sein de laquelle nous pouvons modifier l’état du widget. Dans ce cas-ci, le compteur est incrémenté. Et grâce à l’utilisation de `setState`, l’affichage de l’application est mis à jour pour refléter le nouvel état du widget. 
 
@@ -89,9 +89,7 @@ Faites appel à ce widget dans le fichier `main.dart` avec un contact de test de
 
 ```dart
 children: <Widget>[
-  const Text(
-    'You have pushed the button this many times:',
-  ),
+  const Text('You have pushed the button this many times:'),
   Text(
     '$_counter',
     style: Theme.of(context).textTheme.headlineMedium,
@@ -229,7 +227,7 @@ Faites un clic droit sur le nom de la classe `HomeScreen` et sélectionnez l’o
 Rajoutez ensuite le code suivant au début de la classe `_HomeScreenState`.
 
 ```dart
-var showFavorites = false;
+var showAllContacts = true; // if false only show favorites
 
 void _toggleFavorites() => setState(() => showFavorites = !showFavorites);
 ```
@@ -242,8 +240,8 @@ Nous pouvons maintenant modifier la méthode `build` pour réagir à l’état d
 @override
 Widget build(BuildContext context) {
   final displayedContacts = [
-    for (var contact in defaultContacts)
-      if (!showFavorites || contact.isFavorite) contact
+    for (final contact in defaultContacts)
+      if (showAllContacts || contact.isFavorite) contact
   ];
 
   return Scaffold(
@@ -252,7 +250,7 @@ Widget build(BuildContext context) {
       backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       actions: [
         IconButton(
-          icon: Icon(showFavorites ? Icons.star : Icons.star_border),
+          icon: Icon(showAllContacts ? Icons.star_border : Icons.star),
           onPressed: _toggleFavorites,
         ), 
       ],
@@ -274,7 +272,7 @@ Widget build(BuildContext context) {
 }
 ```
 
-Nous avons rajouté dans l’`AppBar` une liste d’`actions`, des boutons sous forme d’icônes qui s’affichent dans la barre de titre de l’application et permettent de réaliser des actions sur l’écran actuel. Le bouton que nous utilisons ici affiche l’état de la variable `showFavorites` avec une étoile vide ou pleine, et permet de modifier cet état en faisant appel à la méthode `_toggleFavorites` quand il est appuyé. 
+Nous avons rajouté dans l’`AppBar` une liste d’`actions`, des boutons sous forme d’icônes qui s’affichent dans la barre de titre de l’application et permettent de réaliser des actions sur l’écran actuel. Le bouton que nous utilisons ici affiche l’état de la variable `showAllContacts` avec une étoile vide ou pleine, et permet de modifier cet état en faisant appel à la méthode `_toggleFavorites` quand il est appuyé. 
 
 Si vous ne voyez pas le bouton à cause du bandeau _debug_ rajouté par flutter sur les applications en développement, vous pouvez rajouter l’argument suivant au widget `MaterialApp` dans le fichier `main.dart` pour le cacher :
 
@@ -282,7 +280,7 @@ Si vous ne voyez pas le bouton à cause du bandeau _debug_ rajouté par flutter 
 debugShowCheckedModeBanner: false,
 ```
 
-Au lieu d’afficher simplement tous les contacts de la liste `defaultContacts`, nous définissons une variable `displayedContacts` qui contiendra soit tous les contacts de la liste si la variable `showFavorites` est _false_, soit uniquement les contacts favoris si elle est _true_. Nous utilisons pour ça la syntaxe de _collection for_ pour faciliter la création de cette liste. Nous pouvons ensuite utiliser cette variable comme base du `ListView.builder` pour afficher les contacts filtrés ou non au sein de l’application.
+Au lieu d’afficher simplement tous les contacts de la liste `defaultContacts`, nous définissons une variable `displayedContacts` qui contiendra soit tous les contacts de la liste si la variable `showAllContacts` est _true_, soit uniquement les contacts favoris si elle est _false_. Nous utilisons pour ça la syntaxe de _collection for_ pour faciliter la création de cette liste. Nous pouvons ensuite utiliser cette variable comme base du `ListView.builder` pour afficher les contacts filtrés ou non au sein de l’application.
 
 Lancez l’application et vérifiez qu’elle correspond à ce que vous attendez.
 
