@@ -2,7 +2,7 @@
 title: Fiche 1
 description: Introduction à Flutter.
 permalink: posts/{{ title | slug }}/index.html
-date: '2025-02-13'
+date: '2025-02-24'
 tags: [fiche, flutter]
 ---
 

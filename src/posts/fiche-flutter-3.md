@@ -2,7 +2,7 @@
 title: Fiche 3
 description: Formulaires & État partagé.
 permalink: posts/{{ title | slug }}/index.html
-date: '2025-02-27'
+date: '2025-03-17'
 tags: [fiche, flutter]
 ---
 

@@ -2,7 +2,7 @@
 title: Fiche 2
 description: Listes & Stateful Widgets.
 permalink: posts/{{ title | slug }}/index.html
-date: '2025-02-20'
+date: '2025-03-10'
 tags: [fiche, flutter]
 ---
 
