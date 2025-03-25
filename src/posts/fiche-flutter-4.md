@@ -427,7 +427,7 @@ Avec des applications toujours plus complexes, il devient vite nécessaire de ra
 -	La couche *View* correspond aux différents widgets qui vont composer nos écrans et leurs composants. Elle définit la structure et l’affichage de l’application. Pour bien séparer les responsabilités, nous allons déplacer la gestion de l’état de l’application vers la couche suivante.
 -	La couche *View Model* correspond à la gestion de l’état partagé de l’application. C’est maintenant dans cette couche que nous allons enregistrer les variables d’état ainsi que les méthodes permettant leur modification. Les widgets n’ont alors plus qu’à faire s’inscrire aux view models et afficher l’application en fonction de leur état.
 
-Dans le projet de ce tutoriel, nous n’avons pas de couche *Model* comme les données utilisées sont juste un simple entier. Nous n’avons pas encore de couche *View Model*, cela viendra dans la section suivante. Nous pouvons par contre regrouper les fichiers de notre couche *View*. Créez un dossier `views` et déplacez-y les fichiers contenant les écrans.
+Dans le projet de ce tutoriel, nous n’avons pas de couche *Model* comme les données utilisées sont juste un simple entier. Nous n’avons pas encore de couche *View Model*, cela viendra dans la section suivante. Nous pouvons par contre regrouper les fichiers de notre couche *View*. Créez un sous-dossier `views` dans le dossier `lib` et déplacez-y les fichiers contenant les écrans.
 
 > Commit: `T04.5 Architecture MVVM`
 
@@ -452,7 +452,7 @@ Observations :
 
 ### Création d'un view model
 
-Créez un dossier `view_models` avec un fichier `click_view_model.dart` contenant le code suivant :
+Créez un sous-dossier `view_models` dans le dossier `lib` avec un fichier `click_view_model.dart` contenant le code suivant :
 
 ```dart
 import 'package:flutter/material.dart';

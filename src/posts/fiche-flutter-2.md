@@ -229,10 +229,10 @@ Rajoutez ensuite le code suivant au début de la classe `_HomeScreenState`.
 ```dart
 var showAllContacts = true; // if false only show favorites
 
-void _toggleFavorites() => setState(() => showFavorites = !showFavorites);
+void _toggleMode() => setState(() => showAllContacts = !showAllContacts);
 ```
 
-La méthode `_toggleFavorites` permet de modifier l’état de la variable `showFavorites`. Grâce à l’utilisation de la méthode `setState`, l’affichage du `HomeScreen` sera mis à jour pour refléter le nouvel état de cette variable. 
+La méthode `_toggleMode` permet de modifier l’état de la variable `showAllContacts`. Grâce à l’utilisation de la méthode `setState`, l’affichage du `HomeScreen` sera mis à jour pour refléter le nouvel état de cette variable. 
 
 Nous pouvons maintenant modifier la méthode `build` pour réagir à l’état du widget. 
 
@@ -251,7 +251,7 @@ Widget build(BuildContext context) {
       actions: [
         IconButton(
           icon: Icon(showAllContacts ? Icons.star_border : Icons.star),
-          onPressed: _toggleFavorites,
+          onPressed: _toggleMode,
         ), 
       ],
     ),
@@ -272,7 +272,7 @@ Widget build(BuildContext context) {
 }
 ```
 
-Nous avons rajouté dans l’`AppBar` une liste d’`actions`, des boutons sous forme d’icônes qui s’affichent dans la barre de titre de l’application et permettent de réaliser des actions sur l’écran actuel. Le bouton que nous utilisons ici affiche l’état de la variable `showAllContacts` avec une étoile vide ou pleine, et permet de modifier cet état en faisant appel à la méthode `_toggleFavorites` quand il est appuyé. 
+Nous avons rajouté dans l’`AppBar` une liste d’`actions`, des boutons sous forme d’icônes qui s’affichent dans la barre de titre de l’application et permettent de réaliser des actions sur l’écran actuel. Le bouton que nous utilisons ici affiche l’état de la variable `showAllContacts` avec une étoile vide ou pleine, et permet de modifier cet état en faisant appel à la méthode `_toggleMode` quand il est appuyé. 
 
 Si vous ne voyez pas le bouton à cause du bandeau _debug_ rajouté par flutter sur les applications en développement, vous pouvez rajouter l’argument suivant au widget `MaterialApp` dans le fichier `main.dart` pour le cacher :
 
