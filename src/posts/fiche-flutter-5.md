@@ -428,11 +428,7 @@ Créez maintenant un widget pour afficher un film avec un layout soigné. Vous d
 
 ![](/images/fiche5/img2.png)
 
-Pour l’image, vous pouvez utiliser un widget `Image.network` qui affiche un image à une URI en argument. Attention sur la plateforme web, les images ne chargent pas correctement en utilisant le moteur de rendu par défaut. Pour changer de moteur de rendu et régler ce problème, il faut lancer l’application avec la commande suivante :
-
-```sh
-flutter run -d chrome --web-renderer html
-```
+Pour les images, vous pouvez utiliser un widget `Image.network` qui affiche un image à une URI en argument.
 
 Modifiez votre application pour qu’elle fasse appel à ce nouveau widget lors de l’affichage des films récupérés lors de l’étape précédente.
 
