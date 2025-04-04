@@ -368,6 +368,305 @@ Dans votre browser, ouvrez le tab Application > LocalStorage dans l'inspecteur e
 
 > Commitez votre code avec "T06.3 Mise à jour du theme"
 
+## Gestion des notes
 
+Notre application ne se limite évidemment pas à changer la couleur de la barre - le but est de permettre à l'utilisateur de gérer des notes. Une note a un nom, un contenu et un id (généré). Nous voulons que les notes ne disparaissent pas entre chaque usage de l'application, donc il faut une solution de sauvegarde durable.
 
+Les shared preferences vu plus haut ne permettent pas de sauvegarder des objets complexes comme notre liste de notes - heureusement une solution existe sur toutes les plateforme mobiles: sqlite
 
+### sqlite et flutter
+
+[sqlite](https://www.sqlite.org/index.html) est une implémentation opensource complète d'un database engine connu pour être rapide et surtout léger (en taille). Ceci lui a permis d'être installé sur de nombreuses plateforme - en ce compris la majorité des téléphones portables. En d'autre mot c'est une alternative "portable" a des RDMS comme MySQL ou Postgresql.
+
+Flutter dispose du package [sqflite](https://pub.dev/packages/sqflite) pour interagir avec sqlite.
+
+sqlite n'est toutefois pas disponible en web (les navigateurs ont leurs propres solutions à niveau, typiquement [IndexedDB](https://developer.mozilla.org/fr/docs/Web/API/IndexedDB_API)) - mais un petit hack va nous permettre de développer notre application sans devoir directement tester sur le téléphone.
+
+### Installation de sqlite pour Flutter
+
+Nous allons installer le package sqlflite et son alternative web, sqflite_common_ffi_web:
+
+```bash
+flutter pub add sqflite
+flutter pub add path
+flutter pub add sqflite_common_ffi_web
+```
+
+Il faut ensuite tourner une petite ligne de commande (dans le terminal, dans le répertoire de votre application):
+
+```bash
+dart run sqflite_common_ffi_web:setup
+```
+
+Après ceci vous devriez avoir:
+
+sqflite & sqflite_common_ffi_web dans vos dépendances dans le fichier pubspec.yml:
+
+```yml
+dependencies:
+  flutter:
+    sdk: flutter
+
+  go_router: ^14.8.1
+  shared_preferences: ^2.5.3
+  provider: ^6.1.4
+  sqflite: ^2.4.1
+  sqflite_common_ffi_web: ^0.4.5+4
+```
+
+Deux fichiers: sqflite_sw.js et sqflite3.wasm dans le folder web. Vérifiez que tout cela est bien présent avant de continuer.
+
+Pour les curieux.ses - sqflite_common_ffi_web réimplémente l'API (ie le fait de pouvoir intérpréter des SQLs) de sqlite on top of... IndexedDB (qui est pourtant du NoSQL). Inefficient et déconseillé pour de la production - mais parfait ici pour garder notre flux de développement rapide dans le navigateur sans avoir à faire appel au simulateur Android.
+
+### Configuration et test de la base de données
+
+Avant d'aller plus loin dans notre application nous allons faire un premier test avec sqlite pour s'assurer que tout est bien installé et configuré. Ceci ne respecte pas les conseils que l'on vous a donné en terme de structure de code - le but ici n'est pas d'avoir une bonne architecture mais de s'assurer que tout fonctionne - dès que cela sera testé, nous allons voir comment organiser cela proprement.
+
+Nous allons ajouter une méthode (asychrhone) à notre fichier main.dart
+```dart
+Future<Database> initDatabase() async {
+  // Initialize your database here
+  WidgetsFlutterBinding.ensureInitialized();
+  databaseFactory = databaseFactoryFfiWeb; // sqflite web "hack"
+
+  var _database = await openDatabase(
+    join(await getDatabasesPath(), 'test.db'),
+    version: 1,
+  );
+
+  await _database.execute('DROP TABLE IF EXISTS Post');
+  await _database.execute(
+    'CREATE TABLE Post(id INTEGER PRIMARY KEY, name TEXT, content TEXT)',
+  );
+  await _database.insert('Post', <String, Object?>{'name': 'Post 1', 'content': 'Content 1'});
+  await _database.insert('Post', <String, Object?>{'name': 'Post 2', 'content': 'Content 2'});
+
+  records = await _database.query('Post');
+  print(records);
+}
+```
+
+Que fait cette méthode ?
+
+- Elle remplace la factory (la class qui créer des bases de données) de sqflite par celle de web - c'est ce qui nous permet de travailler en web. Dans un cas réel, cette ligne serait dans un test du type "if dev use web, else use standard sqlite" (via par exemple une variable d'environnement)
+- Elle crée et ouvre une base de données dans le fichier "test.db"
+- Une fois l'objet database récupéré, il est possible de l'utiliser pour exécuter des SQLs - soit avec l'ordre complet, soit via certaines méthodes qui simplifient l'écriture:
+
+```dart
+records = await _database.query('Post');
+```
+
+Ceci renvoie tous les "posts" (et est donc l'équivalent de "SELECT * FROM POST").
+
+Notre but est juste de vérifier si cela fonctionne - donc nous créons une table et deux post, que l'on affiche ensuite (via "print" donc dans la console web).
+
+Modifiez la méthode "build" de votre MyApp pour appeler initDatabase() avant le return. Lancez votre applications, vérifiez que votre console montre bien deux records.
+
+> Commitez votre code avec "T06.4 sqflite configuration"
+
+### Repository
+
+Maintenant que nous avons nos éléments technique en place (et testés), nous pouvons structurer l'application correctement:
+
+- Créer un modèle pour Post
+- Créer un Repository qui sera la seule classe à interagir avec la base de données
+- Créer un ViewModel qui va utiliser le repository
+- Passer ce ViewModel au reste de l'application via un Provider
+
+La plupart de ces éléments sont connus. Créez un folder models pour ranger le tout. 
+
+Il nous faut d'abord notre classe Post:
+
+```dart
+class Post {
+  final int? id;
+  final String name;
+  final String content;
+
+  Post({this.id, required this.name, required this.content});
+
+  @override
+  String toString() {
+    return 'Post{id: $id, name: $name, content: $content}';
+  }
+}
+```
+
+L'id est optionnelle car elle sera assignée par la base de donnée - on ne l'aura donc qu'une fois le record inséré.
+
+Nous pouvons maintenant créer un PostRepository:
+
+```dart
+class PostRepository {
+  late Database _database;
+
+  Database get database => _database;
+
+  Future<Post> createPost(name, content) async {
+    final id = await _database.insert('Post', { "name": name, "content": content });
+    final post = Post(
+      id: id,
+      name: name,
+      content: content,
+    );
+    return post;
+  }
+
+  Future<void> deletePost(id) async {
+    await _database.delete(
+      'Post',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<List<Post>> getPosts() async {
+    final maps = await _database.query('Post');
+    return List.generate(maps.length, (i) {
+      return Post(
+        id: maps[i]['id'] as int?,
+        name: maps[i]['name'] as String,
+        content: maps[i]['content'] as String,
+      );
+    });
+  }
+
+  Future<void> initDatabase() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    databaseFactory = databaseFactoryFfiWeb;
+    _database = await openDatabase(
+      join(await getDatabasesPath(), 'test.db'),
+      version: 1,
+    );
+
+    await _database.execute('DROP TABLE IF EXISTS Post');
+    await _database.execute(
+      'CREATE TABLE Post(id INTEGER PRIMARY KEY, name TEXT, content TEXT)',
+    );
+    await _database.insert('Post', <String, Object?>{'name': 'Post 1', 'content': 'Content 1'});
+    await _database.insert('Post', <String, Object?>{'name': 'Post 2', 'content': 'Content 2'});
+  }
+}
+```
+
+Celui ci dispose du code pour initialiser la base de donnée (le même que testé plus haut), et des méthodes pour interagir avec celle ci et renvoyer des Post. Les méthodes sur la base de données étant asychrone, on renvoie systématiquement des Future.
+
+Nous pouvons enlever notre code d'initialization de la db de main.dart et appeller notre repository à la place dans la méthode main (qui peut elle même être async). C'est l'occasion de "rappatrier" le code de MyApp qui ne fait de toute facon qu'appeller MaterialApp.router dans la méthode main:
+
+```dart
+//main.dart
+void  main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final databaseProvider = PostRepository();
+  await databaseProvider.initDatabase();
+  print(databaseProvider.getPosts());
+
+  runApp(ChangeNotifierProvider<ThemeViewModel>(
+      create: (context) => ThemeViewModel(),
+      child:  // Use the provider to get the theme
+      MaterialApp.router(
+          routerConfig: _router,
+          debugShowCheckedModeBanner: false,
+          title: 'My notes',
+          theme: ThemeData(
+          ))
+  ));
+}
+```
+
+Lancez votre application pour vérifier que tout fonctionne toujours, avec les records affichés dans le log.
+
+> Commitez avec "T06.5 Repository"
+
+### ViewModel et MultiProvider
+
+Nous allons maintenant créer un ViewModel pour donner accès à nos données à notre application:
+
+```dart
+class PostViewModel with ChangeNotifier {
+  PostRepository postRepository;
+  List<Post> _posts = [];
+
+  PostViewModel(this.postRepository) {
+    postRepository.getPosts().then((posts) {
+      _posts = posts;
+      notifyListeners();
+    });
+  }
+
+  List<Post> get posts => _posts;
+
+  Post getPost(String id) {
+    return posts.firstWhere((post) => post.id.toString() == id);
+  }
+
+  Future<void> addPost(String name, String content) async {
+    final post = await postRepository.createPost(name, content);
+    _posts.add(post);
+    notifyListeners();
+  }
+
+  Future<void> deletePost(int id) async {
+    await postRepository.deletePost(id);
+    _posts.removeWhere((post) => post.id == id);
+    notifyListeners();
+  }
+}
+```
+
+La classe prend le Repository en paramètre, charge tous les posts depuis la base de données et les stocke dans une List - elle fourni également des methodes pour 
+
+- récupérer tous les Posts
+- récupérer un Post basé sur son id
+- Ajouter un Post
+- Supprimer un Post
+
+En somme le "CRUD" typique.
+
+Nous n'avons plus qu'à initiliser ce view model et le passer à notre application - mais il y a un soucis: nous avons déjà un Provider - celui pour le Theme:
+
+```dart
+runApp(ChangeNotifierProvider<ThemeViewModel>(
+      create: (context) => ThemeViewModel(),
+      child:  // Use the provider to get the theme
+      MaterialApp.router(
+          routerConfig: _router,
+          debugShowCheckedModeBanner: false,
+          title: 'My notes',
+          theme: ThemeData(
+          ))
+  ));
+```
+
+Il est possible de chainer les Provider (faire de l'un l'enfant de l'autre) - mais cela devient vite illisible. Flutter fourni une classe MultiProvider pour ce genre de situations:
+
+```dart
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final databaseProvider = PostRepository();
+  await databaseProvider.initDatabase();
+  final model = PostViewModel(databaseProvider);
+  runApp(MultiProvider(
+      providers: [
+        ChangeNotifierProvider<PostViewModel>(
+          create: (context) => model,
+        ),
+        ChangeNotifierProvider<ThemeViewModel>(create:
+            (context) => ThemeViewModel()),
+      ],
+      child: MaterialApp.router(
+        routerConfig: _router,
+        debugShowCheckedModeBanner: false,
+        title: 'My notes',
+        theme: ThemeData(
+        ),
+      ))
+  );
+}
+```
+
+Nous avons donc ajouté notre ViewModel & provider à l'application. Les différents écrans peuvent maintenant récupérer le theme ou les posts ou les deux.
+
+> Commitez avec "T06.6 MultiProvider"
+
+### Usage dans les écrans
