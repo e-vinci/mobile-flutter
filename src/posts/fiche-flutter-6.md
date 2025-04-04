@@ -669,4 +669,190 @@ Nous avons donc ajouté notre ViewModel & provider à l'application. Les différ
 
 > Commitez avec "T06.6 MultiProvider"
 
-### Usage dans les écrans
+### PostList
+
+A ce stade ci l'application est toujours vide - mais le plus gros est fait. Vu que nous créeons deux post dans le initDatabase, nous pouvons directement tester l'affichage dans PostList:
+
+```dart
+    //post_list.dart
+    return Scaffold(
+      appBar: navBar(context, 'Posts'),
+      body:
+      Consumer<PostViewModel>(
+        builder: (context, model, child) {
+          return ListView.builder(
+            itemCount: model.posts.length,
+            itemBuilder: (context, index) {
+              final post = model.posts[index];
+              return ListTile(
+                title: Text(post.name),
+                subtitle: Text(post.content),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () {
+                    model.deletePost(post.id!);
+                  },
+                ),
+                onTap: () => context.go('/posts/${post.id}'),
+              );
+            },
+          );
+        },
+      )
+    );
+```
+
+Nous utilisons un Consumer qui nous permet d'accéder au PostViewModel - dans ce cas ci à la méthode "posts" qui nous renvoie tous les posts et à deletePost pour en supprimer un. Un click sur un post nous emmene vers un écran qui affiche de détail d'un post (écran qui n'existe pas encore).
+
+### PostDetail
+
+Nous allons créer cet écran - en commençant par la route:
+
+```dart
+GoRoute(
+    path: 'posts/:id',
+    builder: (context, state) => PostDetails(post_id: state.pathParameters['id'] ?? ''),
+)
+```
+
+Cet écran est lié à une url avec paramètre - qui est récupéré en constructeur de l'écran.
+
+L'écran lui même récupère le post (via notre ViewModel) et l'affiche:
+
+```dart
+class PostDetails extends StatelessWidget {
+  final String post_id;
+
+  const PostDetails({super.key, required this.post_id});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<PostViewModel>(builder: (context, model, child) {
+      final post = model.getPost(post_id);
+      return Scaffold(
+          appBar: navBar(context, 'Détails pour ${post.name}'),
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  post.name,
+                ),
+                const SizedBox(height: 16.0),
+                Text(
+                  post.content,
+                ),
+              ],
+            ),
+          ));
+    });
+  }
+}
+```
+
+Mécansime habituel - un Consumer pour récupérer les méthode sde notre ViewModel.
+
+### New Post
+
+Reste un dernier écran - la forme. La route existe déjà.
+
+```dart
+class NewPost extends StatefulWidget {
+  const NewPost({super.key});
+
+  @override
+  _NewPostState createState() => _NewPostState();
+}
+
+class _NewPostState extends State<NewPost> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _contentController = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _contentController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (_formKey.currentState!.validate()) {
+      final name = _nameController.text;
+      final content = _contentController.text;
+      Provider.of<PostViewModel>(context, listen: false).addPost(name, content);
+      Navigator.of(context).pop();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: navBar(context, "Nouveau post"),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(labelText: 'Name'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a name';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _contentController,
+                decoration: const InputDecoration(labelText: 'Content'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter content';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _submit,
+                child: const Text('Create Post'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+On retrouve les éléments clés d'une forme:
+
+- Création des controllers
+- Le code métier (lien avec le ViewModel) dans "onSubmit"
+- Navigator.of(context).pop(); pour retourner à l'écran précédent une fois le submit fait
+
+## Exercice supplémentaire
+
+Créez un nouveau projet appelé "ex6" dans votre repository.
+
+Votre objectif est de créer une application pour gérer sa liste de courses.
+
+Un "Article" devrait contenir:
+
+- Un nom
+- Un prix (double)
+- Un nombre d'article (initialement 0)
+
+L'écran principal doit montrer la liste de course avec pour chaque article son nom, prix à l'unité, quantité et total.
+
+Il doit également être possible d'ajuster la quantité de chaque article (idéalement sans quitter l'écran) ou de l'enlever.
+
+A tout moment le total du panier doit être visible en bas de l'écran.
+
+Un bouton "+" en bas à droite ("Floating") donnne accès à une forme pour ajouter un article à la liste.
+
