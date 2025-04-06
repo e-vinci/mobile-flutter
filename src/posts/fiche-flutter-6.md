@@ -856,3 +856,5 @@ A tout moment le total du panier doit être visible en bas de l'écran.
 
 Un bouton "+" en bas à droite ("Floating") donnne accès à une forme pour ajouter un article à la liste.
 
+![](/images/fiche6/articles.png)
+
