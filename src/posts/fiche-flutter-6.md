@@ -8,7 +8,7 @@ tags: [fiche, flutter]
 
 # Objectifs de la fiche
 
-Nous avons vu comment gérer un état dans l'applicatin (setState, etc) - mais cet état n'est que transitoire (le temps que l'utilisateur utilise l'application).
+Nous avons vu comment gérer un état dans l'application (setState, etc) - mais cet état n'est que transitoire (le temps que l'utilisateur utilise l'application).
 
 Dans de nombreux cas nous souhaitons que l'état dure plus longtemps - typiquement entre deux sessions d'activités, que ce soit pour des préférences (langue, theme, etc) ou pour des données créees ou gérées par l'utilisateur.
 
@@ -16,7 +16,7 @@ Nous allons voir comment traiter ces deux scénarios à travers une application 
 
 ## Structure de l'application
 
-Créez une nouvelle app flutter, et installez les package go_router et provider comme précédemment (`flutter pub add go_router`, `flutter pub add provider`).
+Créez une nouvelle app flutter `tuto6`, et installez les package go_router et provider comme précédemment (`flutter pub add go_router`, `flutter pub add provider`).
 
 ```dart
 final _router = GoRouter(
@@ -50,23 +50,23 @@ Créez déjà les écrans PostList, NewPost et Settings sous forme de Stateless 
 
 ```dart
 AppBar(
-    title: Text(title),
-    backgroundColor: Colors.blue,
-    actions: [
-      IconButton(
-        icon: const Icon(Icons.add),
-        onPressed: () {
-          context.go('/new_post');
-        },
-      ),
-      IconButton(
-        icon: const Icon(Icons.color_lens),
-        onPressed: () {
-          context.go('/settings');
-        },
-      ),
-    ],
-  );
+  title: Text(title),
+  backgroundColor: Colors.blue,
+  actions: [
+    IconButton(
+      icon: const Icon(Icons.add),
+      onPressed: () {
+        context.go('/new_post');
+      },
+    ),
+    IconButton(
+      icon: const Icon(Icons.color_lens),
+      onPressed: () {
+        context.go('/settings');
+      },
+    ),
+  ],
+);
 ```
 
 Vérfiez que vous pouvez bien naviguer entre les différents écrans, et faite un premier commit:
@@ -92,7 +92,7 @@ Nous allons pour cela utiliser un package flutter nommé [shared preferences](ht
 
 Installez le package avec `flutter pub add shared_preferences`.
 
-L'api de SharedPreference est simple:
+L'api de SharedPreferences est simple:
 
 ```dart
 final prefs = await SharedPreferences.getInstance();
@@ -100,7 +100,7 @@ prefs.setString("key", my_string);
 var value = prefs.getString("key");
 ```
 
-SharedPreference est limité à quatre types type et un type tableau:
+SharedPreferences est limité à quatre types type et un type tableau:
 
 - setString/getString
 - setBool/getBool
@@ -112,7 +112,7 @@ Le package est donc tout a fait adapté à ce que nous voulons faire ici - sauve
 
 ### ThemeService
 
-Nous voulons éviter d'avoir des appels à SharedPreference partout dans l'application, donc nous allons créer un service pour isoler ceci. Créez une class ThemService dans un folder "services":
+Nous voulons éviter d'avoir des appels à SharedPreferences partout dans l'application, donc nous allons créer un service pour isoler ceci. Créez une class ThemeService dans un folder "services":
 
 ```dart
 //theme_service.dart
@@ -138,7 +138,8 @@ Pour que tous les widgets aient accès à la "mainColor", nous allons comme pré
 
 ```dart
 import 'package:flutter/material.dart';
-import 'package:tuto6stepbystep/models/theme_service.dart';
+
+import '../services/theme_service.dart';
 
 const COLORS = {
   "red": Colors.red,
@@ -207,7 +208,7 @@ Avec ces différents éléments on peut déjà adapter chaque écran pour affich
     return Scaffold(
       appBar: AppBar(
         title: Text('Settings'),
-        backgroundColor: model.mainColor,
+        backgroundColor: model.mainColorMaterial,
 ```
 
 Faire ces opérations dans chaque écran est un peu fastidieux. Pour éviter ceci on peut extraire les AppBar dans un fichier distinct nav_bar.dart dans un nouveau dossier "widgets":
@@ -218,7 +219,7 @@ PreferredSizeWidget navBar(BuildContext context, String title) {
   final themeViewModel = Provider.of<ThemeViewModel>(context);
   return AppBar(
     title: Text(title),
-    backgroundColor: themeViewModel.mainColor,
+    backgroundColor: themeViewModel.mainColorMaterial,
     actions: [
       IconButton(
         icon: const Icon(Icons.add),
@@ -264,8 +265,8 @@ Regardez le type attendu pour "appBar" dans [Scaffold](https://api.flutter.dev/f
 Pour expliquer le tout:
 
 - Nous voulons éviter de coder une AppBar identique (à l'exception du titre) dans chaque composant
-- Nous devons respected l'API de Scaffold qui attend un widget de type "PreferredSize" dans le champs appBar
-- Il nous serait possible de recoder une AppBar nous même (en étandant la classe PreferredSize)... mais c'est du travail inutile
+- Nous devons respected l'API de Scaffold qui attend un widget de type "PreferredSizeWidget" dans le champs appBar
+- Il nous serait possible de recoder une AppBar nous même (en étandant la classe PreferredSizeWidget)... mais c'est du travail inutile
 - Plutôt que de "wrapper" un composant AppBar, nous avons simplement une méthode qui le créer (on appelle ca une "factory") et le renvoie
 
 Le tout devrait tourner avec un background rouge.
@@ -281,7 +282,8 @@ Pour ceci nous allons créer un simple ColorPicker:
 ```dart
 // widgets/color_picker.dart
 import 'package:flutter/material.dart';
-import 'package:tuto6stepbystep/models/theme_view_model.dart';
+
+import '../view_models/theme_view_model.dart';
 
 class ColorPicker extends StatelessWidget {
   final String selectedColor;
@@ -360,13 +362,11 @@ Nous avons ajouté le composant (avec un peu de padding) - et surtout un Consume
 - de fournir la couleur actuelle à ColorPicker
 - de mettre à jour le ViewModel quand une nouvelle couleur est sélectionnée.
 
-Testez votre application 
-
-> Notez qu'en l'état il faut changer d'écran pour voir les changements !
+Testez votre application. Essayez également de recharger la page (en mode web), ou relancer l'application. Le thème choisi devrait rester persistent.
 
 Dans votre browser, ouvrez le tab Application > LocalStorage dans l'inspecteur et changez les couleurs dans Settings - les valeurs sont adaptées dans le local storage.
 
-> Commitez votre code avec "T06.3 Mise à jour du theme"
+> Commit: `T06.3 Mise à jour du theme`
 
 ## Gestion des notes
 
@@ -426,34 +426,44 @@ Nous allons ajouter une méthode (asychrhone) à notre fichier main.dart
 ```dart
 Future<Database> initDatabase() async {
   // Initialize your database here
-  WidgetsFlutterBinding.ensureInitialized();
-  databaseFactory = databaseFactoryFfiWeb; // sqflite web "hack"
+  if (kIsWeb) {
+    WidgetsFlutterBinding.ensureInitialized();
+    databaseFactory = databaseFactoryFfiWeb; // sqflite web "hack"
+  }
 
-  var _database = await openDatabase(
+  var database = await openDatabase(
     join(await getDatabasesPath(), 'test.db'),
     version: 1,
   );
 
-  await _database.execute('DROP TABLE IF EXISTS Post');
-  await _database.execute(
+  await database.execute('DROP TABLE IF EXISTS Post');
+  await database.execute(
     'CREATE TABLE Post(id INTEGER PRIMARY KEY, name TEXT, content TEXT)',
   );
-  await _database.insert('Post', <String, Object?>{'name': 'Post 1', 'content': 'Content 1'});
-  await _database.insert('Post', <String, Object?>{'name': 'Post 2', 'content': 'Content 2'});
+  await database.insert('Post', <String, Object?>{
+    'name': 'Post 1',
+    'content': 'Content 1',
+  });
+  await database.insert('Post', <String, Object?>{
+    'name': 'Post 2',
+    'content': 'Content 2',
+  });
 
-  records = await _database.query('Post');
+  final records = await database.query('Post');
   print(records);
+
+  return database;
 }
 ```
 
 Que fait cette méthode ?
 
-- Elle remplace la factory (la class qui créer des bases de données) de sqflite par celle de web - c'est ce qui nous permet de travailler en web. Dans un cas réel, cette ligne serait dans un test du type "if dev use web, else use standard sqlite" (via par exemple une variable d'environnement)
+- Elle remplace la factory (la class qui créer des bases de données) de sqflite par celle de web - c'est ce qui nous permet de travailler en web. Cette partie code code ne s'exécute que si l'application est build pour le web grâce à la constante `kIsWeb`.
 - Elle crée et ouvre une base de données dans le fichier "test.db"
 - Une fois l'objet database récupéré, il est possible de l'utiliser pour exécuter des SQLs - soit avec l'ordre complet, soit via certaines méthodes qui simplifient l'écriture:
 
 ```dart
-records = await _database.query('Post');
+final records = await _database.query('Post');
 ```
 
 Ceci renvoie tous les "posts" (et est donc l'équivalent de "SELECT * FROM POST").
@@ -462,15 +472,15 @@ Notre but est juste de vérifier si cela fonctionne - donc nous créons une tabl
 
 Modifiez la méthode "build" de votre MyApp pour appeler initDatabase() avant le return. Lancez votre applications, vérifiez que votre console montre bien deux records.
 
-> Commitez votre code avec "T06.4 sqflite configuration"
+> Commit: `T06.4 sqflite configuration`
 
 ### Repository
 
 Maintenant que nous avons nos éléments technique en place (et testés), nous pouvons structurer l'application correctement:
 
 - Créer un modèle pour Post
-- Créer un Repository qui sera la seule classe à interagir avec la base de données
-- Créer un ViewModel qui va utiliser le repository
+- Créer un Service qui sera la seule classe à interagir avec la base de données
+- Créer un ViewModel qui va utiliser le service
 - Passer ce ViewModel au reste de l'application via un Provider
 
 La plupart de ces éléments sont connus. Créez un folder models pour ranger le tout. 
@@ -494,30 +504,25 @@ class Post {
 
 L'id est optionnelle car elle sera assignée par la base de donnée - on ne l'aura donc qu'une fois le record inséré.
 
-Nous pouvons maintenant créer un PostRepository:
+Nous pouvons maintenant créer un PostService:
 
 ```dart
-class PostRepository {
+class PostService {
   late Database _database;
 
   Database get database => _database;
 
   Future<Post> createPost(name, content) async {
-    final id = await _database.insert('Post', { "name": name, "content": content });
-    final post = Post(
-      id: id,
-      name: name,
-      content: content,
-    );
+    final id = await _database.insert('Post', {
+      "name": name,
+      "content": content,
+    });
+    final post = Post(id: id, name: name, content: content);
     return post;
   }
 
   Future<void> deletePost(id) async {
-    await _database.delete(
-      'Post',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await _database.delete('Post', where: 'id = ?', whereArgs: [id]);
   }
 
   Future<List<Post>> getPosts() async {
@@ -532,51 +537,55 @@ class PostRepository {
   }
 
   Future<void> initDatabase() async {
-    WidgetsFlutterBinding.ensureInitialized();
-    databaseFactory = databaseFactoryFfiWeb;
+    if (kIsWeb) {
+      WidgetsFlutterBinding.ensureInitialized();
+      databaseFactory = databaseFactoryFfiWeb;
+    }
+
     _database = await openDatabase(
       join(await getDatabasesPath(), 'test.db'),
       version: 1,
     );
 
-    await _database.execute('DROP TABLE IF EXISTS Post');
-    await _database.execute(
-      'CREATE TABLE Post(id INTEGER PRIMARY KEY, name TEXT, content TEXT)',
+    final result = await _database.rawQuery(
+      "SELECT count(*) AS count FROM sqlite_master WHERE type='table' AND name='Post'",
     );
-    await _database.insert('Post', <String, Object?>{'name': 'Post 1', 'content': 'Content 1'});
-    await _database.insert('Post', <String, Object?>{'name': 'Post 2', 'content': 'Content 2'});
+
+    if (result[0]["count"] == 0) {
+      await _database.execute(
+        'CREATE TABLE Post(id INTEGER PRIMARY KEY, name TEXT, content TEXT)',
+      );
+      await _database.insert('Post', <String, Object?>{
+        'name': 'Post 1',
+        'content': 'Content 1',
+      });
+      await _database.insert('Post', <String, Object?>{
+        'name': 'Post 2',
+        'content': 'Content 2',
+      });
+    }
   }
 }
 ```
 
-Celui ci dispose du code pour initialiser la base de donnée (le même que testé plus haut), et des méthodes pour interagir avec celle ci et renvoyer des Post. Les méthodes sur la base de données étant asychrone, on renvoie systématiquement des Future.
+Celui ci dispose du code pour initialiser la base de donnée. Maintenant, la table n'est créée avec des données d'exemple que si elle n'existe pas encore. Il dispose aussi des méthodes pour interagir avec cette base de données et renvoyer des Post. Les méthodes sur la base de données étant asychrone, on renvoie systématiquement des Future.
 
-Nous pouvons enlever notre code d'initialization de la db de main.dart et appeller notre repository à la place dans la méthode main (qui peut elle même être async). C'est l'occasion de "rappatrier" le code de MyApp qui ne fait de toute facon qu'appeller MaterialApp.router dans la méthode main:
+Nous pouvons enlever notre code d'initialization de la db de main.dart et appeller notre service à la place dans la méthode main (qui peut elle même être async):
 
 ```dart
 //main.dart
-void  main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final databaseProvider = PostRepository();
+  final databaseProvider = PostService();
   await databaseProvider.initDatabase();
   print(databaseProvider.getPosts());
-
-  runApp(ChangeNotifierProvider<ThemeViewModel>(
-      create: (context) => ThemeViewModel(),
-      child:  // Use the provider to get the theme
-      MaterialApp.router(
-          routerConfig: _router,
-          debugShowCheckedModeBanner: false,
-          title: 'My notes',
-          theme: ThemeData(
-          ))
-  ));
+  runApp(const MyApp());
 }
 ```
 
 Lancez votre application pour vérifier que tout fonctionne toujours, avec les records affichés dans le log.
 
-> Commitez avec "T06.5 Repository"
+> Commit: "T06.5 PostService"
 
 ### ViewModel et MultiProvider
 
@@ -584,11 +593,11 @@ Nous allons maintenant créer un ViewModel pour donner accès à nos données à
 
 ```dart
 class PostViewModel with ChangeNotifier {
-  PostRepository postRepository;
+  PostService postService;
   List<Post> _posts = [];
 
-  PostViewModel(this.postRepository) {
-    postRepository.getPosts().then((posts) {
+  PostViewModel(this.postService) {
+    postService.getPosts().then((posts) {
       _posts = posts;
       notifyListeners();
     });
@@ -596,25 +605,24 @@ class PostViewModel with ChangeNotifier {
 
   List<Post> get posts => _posts;
 
-  Post getPost(String id) {
-    return posts.firstWhere((post) => post.id.toString() == id);
-  }
+  Post getPost(String id) =>
+      posts.firstWhere((post) => post.id.toString() == id);
 
   Future<void> addPost(String name, String content) async {
-    final post = await postRepository.createPost(name, content);
+    final post = await postService.createPost(name, content);
     _posts.add(post);
     notifyListeners();
   }
 
   Future<void> deletePost(int id) async {
-    await postRepository.deletePost(id);
+    await postService.deletePost(id);
     _posts.removeWhere((post) => post.id == id);
     notifyListeners();
   }
 }
 ```
 
-La classe prend le Repository en paramètre, charge tous les posts depuis la base de données et les stocke dans une List - elle fourni également des methodes pour 
+La classe prend le service en paramètre, charge tous les posts depuis la base de données et les stocke dans une List - elle fourni également des methodes pour 
 
 - récupérer tous les Posts
 - récupérer un Post basé sur son id
@@ -626,16 +634,10 @@ En somme le "CRUD" typique.
 Nous n'avons plus qu'à initiliser ce view model et le passer à notre application - mais il y a un soucis: nous avons déjà un Provider - celui pour le Theme:
 
 ```dart
-runApp(ChangeNotifierProvider<ThemeViewModel>(
-      create: (context) => ThemeViewModel(),
-      child:  // Use the provider to get the theme
-      MaterialApp.router(
-          routerConfig: _router,
-          debugShowCheckedModeBanner: false,
-          title: 'My notes',
-          theme: ThemeData(
-          ))
-  ));
+ChangeNotifierProvider(
+  create: (context) => ThemeViewModel(),
+  child: MaterialApp.router(...),
+)
 ```
 
 Il est possible de chainer les Provider (faire de l'un l'enfant de l'autre) - mais cela devient vite illisible. Flutter fourni une classe MultiProvider pour ce genre de situations:
@@ -643,63 +645,72 @@ Il est possible de chainer les Provider (faire de l'un l'enfant de l'autre) - ma
 ```dart
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final databaseProvider = PostRepository();
+  final databaseProvider = PostService();
   await databaseProvider.initDatabase();
-  final model = PostViewModel(databaseProvider);
-  runApp(MultiProvider(
+  runApp(MyApp(postService: databaseProvider));
+}
+
+class MyApp extends StatelessWidget {
+  final PostService postService;
+
+  const MyApp({super.key, required this.postService});
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiProvider(
       providers: [
         ChangeNotifierProvider<PostViewModel>(
-          create: (context) => model,
+          create: (context) => PostViewModel(postService),
         ),
-        ChangeNotifierProvider<ThemeViewModel>(create:
-            (context) => ThemeViewModel()),
+        ChangeNotifierProvider<ThemeViewModel>(
+          create: (context) => ThemeViewModel(),
+        ),
       ],
       child: MaterialApp.router(
-        routerConfig: _router,
+        title: 'Flutter Demo',
         debugShowCheckedModeBanner: false,
-        title: 'My notes',
-        theme: ThemeData(
-        ),
-      ))
-  );
+        theme: ThemeData(),
+        routerConfig: _router,
+      ),
+    );
+  }
 }
 ```
 
 Nous avons donc ajouté notre ViewModel & provider à l'application. Les différents écrans peuvent maintenant récupérer le theme ou les posts ou les deux.
 
-> Commitez avec "T06.6 MultiProvider"
+> Commit: `T06.6 MultiProvider`
 
 ### PostList
 
 A ce stade ci l'application est toujours vide - mais le plus gros est fait. Vu que nous créeons deux post dans le initDatabase, nous pouvons directement tester l'affichage dans PostList:
 
 ```dart
-    //post_list.dart
-    return Scaffold(
-      appBar: navBar(context, 'Posts'),
-      body:
-      Consumer<PostViewModel>(
-        builder: (context, model, child) {
-          return ListView.builder(
-            itemCount: model.posts.length,
-            itemBuilder: (context, index) {
-              final post = model.posts[index];
-              return ListTile(
-                title: Text(post.name),
-                subtitle: Text(post.content),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () {
-                    model.deletePost(post.id!);
-                  },
-                ),
-                onTap: () => context.go('/posts/${post.id}'),
-              );
-            },
+//post_list.dart
+return Scaffold(
+  appBar: navBar(context, 'Posts'),
+  body: Consumer<PostViewModel>(
+    builder: (context, model, child) {
+      return ListView.builder(
+        itemCount: model.posts.length,
+        itemBuilder: (context, index) {
+          final post = model.posts[index];
+          return ListTile(
+            title: Text(post.name),
+            subtitle: Text(post.content),
+            trailing: IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () {
+                model.deletePost(post.id!);
+              },
+            ),
+            onTap: () => context.go('/posts/${post.id}'),
           );
         },
-      )
-    );
+      );
+    },
+  ),
+);
 ```
 
 Nous utilisons un Consumer qui nous permet d'accéder au PostViewModel - dans ce cas ci à la méthode "posts" qui nous renvoie tous les posts et à deletePost pour en supprimer un. Un click sur un post nous emmene vers un écran qui affiche de détail d'un post (écran qui n'existe pas encore).
@@ -710,9 +721,12 @@ Nous allons créer cet écran - en commençant par la route:
 
 ```dart
 GoRoute(
-    path: 'posts/:id',
-    builder: (context, state) => PostDetails(post_id: state.pathParameters['id'] ?? ''),
-)
+  path: 'posts/:id',
+  builder:
+      (context, state) => PostDetails(
+        postId: state.pathParameters['id'] ?? '',
+      ),
+),
 ```
 
 Cet écran est lié à une url avec paramètre - qui est récupéré en constructeur de l'écran.
@@ -721,48 +735,47 @@ L'écran lui même récupère le post (via notre ViewModel) et l'affiche:
 
 ```dart
 class PostDetails extends StatelessWidget {
-  final String post_id;
+  final String postId;
 
-  const PostDetails({super.key, required this.post_id});
+  const PostDetails({super.key, required this.postId});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<PostViewModel>(builder: (context, model, child) {
-      final post = model.getPost(post_id);
-      return Scaffold(
-          appBar: navBar(context, 'Détails pour ${post.name}'),
+    return Consumer<PostViewModel>(
+      builder: (context, model, child) {
+        final post = model.getPost(postId);
+        return Scaffold(
+          appBar: navBar(context, 'Details for ${post.name}'),
           body: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  post.name,
-                ),
+                Text(post.name),
                 const SizedBox(height: 16.0),
-                Text(
-                  post.content,
-                ),
+                Text(post.content),
               ],
             ),
-          ));
-    });
+          ),
+        );
+      },
+    );
   }
 }
 ```
 
-Mécansime habituel - un Consumer pour récupérer les méthode sde notre ViewModel.
+Mécansime habituel - un Consumer pour récupérer les méthodes de notre ViewModel.
 
 ### New Post
 
-Reste un dernier écran - la forme. La route existe déjà.
+Reste un dernier écran - le formulaire. La route existe déjà.
 
 ```dart
 class NewPost extends StatefulWidget {
   const NewPost({super.key});
 
   @override
-  _NewPostState createState() => _NewPostState();
+  State<NewPost> createState() => _NewPostState();
 }
 
 class _NewPostState extends State<NewPost> {
@@ -789,7 +802,7 @@ class _NewPostState extends State<NewPost> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: navBar(context, "Nouveau post"),
+      appBar: navBar(context, "New post"),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -799,22 +812,20 @@ class _NewPostState extends State<NewPost> {
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(labelText: 'Name'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a name';
-                  }
-                  return null;
-                },
+                validator:
+                    (value) =>
+                        (value == null || value.isEmpty)
+                            ? 'Please enter a name'
+                            : null,
               ),
               TextFormField(
                 controller: _contentController,
                 decoration: const InputDecoration(labelText: 'Content'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter content';
-                  }
-                  return null;
-                },
+                validator:
+                    (value) =>
+                        (value == null || value.isEmpty)
+                            ? 'Please enter a content'
+                            : null,
               ),
               const SizedBox(height: 20),
               ElevatedButton(
@@ -830,15 +841,17 @@ class _NewPostState extends State<NewPost> {
 }
 ```
 
-On retrouve les éléments clés d'une forme:
+On retrouve les éléments clés d'un formulaire:
 
 - Création des controllers
 - Le code métier (lien avec le ViewModel) dans "onSubmit"
 - Navigator.of(context).pop(); pour retourner à l'écran précédent une fois le submit fait
 
+> Commit: `T06.7 Gestion de notes complète`
+
 ## Exercice supplémentaire
 
-Créez un nouveau projet appelé "ex6" dans votre repository.
+Créez un nouveau projet appelé `ex6` dans votre repository.
 
 Votre objectif est de créer une application pour gérer sa liste de courses.
 
@@ -854,7 +867,7 @@ Il doit également être possible d'ajuster la quantité de chaque article (idé
 
 A tout moment le total du panier doit être visible en bas de l'écran.
 
-Un bouton "+" en bas à droite ("Floating") donnne accès à une forme pour ajouter un article à la liste.
+Un bouton "+" en bas à droite ("Floating") donnne accès à un formulaire pour ajouter un article à la liste.
 
 ![](/images/fiche6/articles.png)
 
