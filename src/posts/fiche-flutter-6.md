@@ -8,6 +8,11 @@ tags: [fiche, flutter]
 
 # Objectifs de la fiche
 
+| Identifiant | Objectif           |
+| ----------- | ------------------ |
+| F10         | Shared Preferences |
+| F11         | DB squlite         |
+
 Nous avons vu comment gérer un état dans l'application (setState, etc) - mais cet état n'est que transitoire (le temps que l'utilisateur utilise l'application).
 
 Dans de nombreux cas nous souhaitons que l'état dure plus longtemps - typiquement entre deux sessions d'activités, que ce soit pour des préférences (langue, theme, etc) ou pour des données créees ou gérées par l'utilisateur.
@@ -870,4 +875,6 @@ A tout moment le total du panier doit être visible en bas de l'écran.
 Un bouton "+" en bas à droite ("Floating") donnne accès à un formulaire pour ajouter un article à la liste.
 
 ![](/images/fiche6/articles.png)
+
+> Commit: `F11 données persistantes`
 
