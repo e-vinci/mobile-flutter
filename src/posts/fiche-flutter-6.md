@@ -1,8 +1,8 @@
 ---
 title: Fiche 6
-description: Locale storage
+description: Shared Preferences & DB sqlite.
 permalink: posts/{{ title | slug }}/index.html
-date: '2025-04-04'
+date: '2025-04-07'
 tags: [fiche, flutter]
 ---
 
@@ -11,7 +11,7 @@ tags: [fiche, flutter]
 | Identifiant | Objectif           |
 | ----------- | ------------------ |
 | F10         | Shared Preferences |
-| F11         | DB squlite         |
+| F11         | DB sqlite          |
 
 Nous avons vu comment gérer un état dans l'application (setState, etc) - mais cet état n'est que transitoire (le temps que l'utilisateur utilise l'application).
 
@@ -876,5 +876,5 @@ Un bouton "+" en bas à droite ("Floating") donnne accès à un formulaire pour 
 
 ![](/images/fiche6/articles.png)
 
-> Commit: `F11 données persistantes`
+> Commit: `F11.1 données persistantes`
 
