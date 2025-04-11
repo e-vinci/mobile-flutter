@@ -475,7 +475,19 @@ Ceci renvoie tous les "posts" (et est donc l'équivalent de "SELECT * FROM POST"
 
 Notre but est juste de vérifier si cela fonctionne - donc nous créons une table et deux post, que l'on affiche ensuite (via "print" donc dans la console web).
 
-Modifiez la méthode "build" de votre MyApp pour appeler initDatabase() avant le return. Lancez votre applications, vérifiez que votre console montre bien deux records.
+Modifiez la méthode "main" appeler initDatabase() avant l'application. 
+
+```dart
+//main.dart
+void main() {
+  initDatabase();
+  runApp(const MyApp());
+}
+```
+
+Lancez votre applications, vérifiez que votre console montre bien deux records.
+
+
 
 > Commit: `T06.4 sqflite configuration`
 
