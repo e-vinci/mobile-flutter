@@ -21,6 +21,10 @@ Pour commencer le tutoriel, créez un nouveau projet flutter nommé `tuto7` dans
 
 Pour ce tutoriel, nous aurons besoin de deux packages différents. Le package `flutter_sms` nous permet d’envoyer des SMS depuis notre application, et le package `location` nous permet de récupérer la localisation de l’utilisateur.
 
+> Nous avons depuis découvert que le package `flutter_sms` ne fonctionne pas correctement avec les versions récentes de flutter. Il ne sera pas possible de compiler l'application pour les plateformes android et iOS. La compilation pour les plateformes web et macOS est bien possible. Mais la seule plateforme qui permettra de tester l'envoi de SMS est la compilation pour le web sur macOS (pas sur windows).
+
+> Si vous souhaitez utiliser les plateformes android ou iOS, n'ajoutez pas ce package et commentez les appels à la fonction `sendSMS`. Sur les autres plateformes, vous pouvez ajouter le package et inclure les appels à cette fonction. Mais ce n'est que en web avec macOS que cela fonctionnera correctement, autrement la fonction fera une erreur à l'utilisation.
+
 Lancez la commande suivante pour installer le package `location` : 
 
 ```sh
@@ -147,11 +151,9 @@ body: Padding(
 
 Ce code utilise la fonction asynchrone `sendSMS` du package `flutter_sms` pour envoyer un SMS lorsque l’utilisateur appuie sur le bouton « Send SMS ». L’application n’envoie pas le SMS directement, mais utilise l’application SMS par défaut de l’appareil pour l’éditer et l’envoyer. Le message envoyé est « Test SMS » au numéro de téléphone « 0456555321 ». Les numéros commençant par 0456 ne sont pas attribués en Belgique, il ne s’agit donc pas d’un vrai numéro de téléphone. 
 
-Cette fonction n’est pas disponible pour toutes les plateformes. C’est seulement le cas sur les OS mobiles (Android ou iOS), et sur certains navigateurs web. À la place du bouton d’envoi, l’application affiche un message d’erreur pour les plateformes ne permettant pas l’envoi de SMS.
+> Comme expliqué dans l'introduction, cette partie pourra ne pas fonctionner selon la plateforme que vous utilisez. 
 
-Attention, cela ne fonctionne pas non plus sur un simulateur Android. La fonction affiche une erreur dans le terminal dans ce cas. Si vous souhaitez tester l’envoi de sms, il est nécessaire d’utiliser un vrai téléphone et non un simulateur.
-
-Testez l'application sur différentes plateformes et vérifiez que vous êtes capables d'envoyer des SMS.
+Testez l'application sur différentes plateformes.
 
 > Commit: `T07.3 Envoi de SMS`
 
@@ -317,6 +319,8 @@ Créez un bouton permettant de naviguer vers un écran affichant les numéros de
 ## Envoi du message d’urgence
 
 Ajoutez un bouton à votre application permettant d’envoyer par SMS le message d’urgence enregistré aux contacts d’urgence enregistrés. Si la plateforme de l’utilisateur ne permet pas l’envoi de SMS, affichez à la place un Dialog avec un message d’erreur. À cette étape, votre application pourra ressembler à la capture d’écran suivante.
+
+> Comme expliqué dans l'introduction de la partie Concepts, l'envoi de SMS ne fonctionne pas sur de nombreuses plateformes. Si c'est le cas de la plateforme que vous utilisez, affichez un dialog avec le message d'urgence à l'appui du bouton "SOS" à la place.
 
 ![](/images/fiche7/img5.png)
 
