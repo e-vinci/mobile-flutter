@@ -1,6 +1,6 @@
 ---
 layout: home
-title: 'Cours Informatique Mobile (Flutter) 2024'
+title: 'Cours Informatique Mobile (Flutter) 2026'
 ---
 
 # Hello Mobile
