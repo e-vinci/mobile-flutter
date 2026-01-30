@@ -32,6 +32,7 @@ Au cours de ces fiches, nous verrons différentes compétences. Le tableau suiva
 ## Enseignants
 
 - Sébastien Strebelle (Lead)
-- Jean-Sébastien Derieuw
+- Claude Michiels
+- Jonathan Fallon
 - Martin Van Aken
 
