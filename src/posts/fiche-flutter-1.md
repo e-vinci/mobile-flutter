@@ -528,6 +528,15 @@ Si vous souhaitez, vous pouvez également consulter les ressources suivantes pou
 
 Ne commencez pas encore les parties liées aux StatefulWidget dans ces différentes ressources, ce sera l’objectif de la fiche suivante !
 
+# Encart: la ligne de commande
+
+Utiliser Android Studio permet de facilement manipuler une application flutter - mais le coeur de flutter, ce sont des instructions "lignes de commandes". En d'autre mots vous pouvez éditer vos application avec l'IDE de votre choix, et lancer les commandes dans le terminal:
+
+```bash
+    flutter create tuto1 # crée une nouvelle application flutter dans le folder tuto1 
+    flutter run -d chrome # lance l'application flutter du folder sur le navigateur chrome
+```
+
 # Exercices
 
 ## Introduction
