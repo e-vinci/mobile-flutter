@@ -50,6 +50,8 @@ Durant chaque fiche, il vous sera demandé de créer un nouveau répertoire avec
 
 Soyez dès lors très attentifs au bon respect des instructions.
 
+Les tests et l'évaluation seront faite pour chaque fiche basé sur l'état de votre repository le *vendredi* suivant la semaine de la fiche. Nous nous baserons sur les dates de commits pour ceci. 
+
 Cette partie de l'évaluation est finale et ne peut pas être représentée en seconde session.
 
 ### Examen
