@@ -2,7 +2,7 @@
 title: Fiche 6
 description: Shared Preferences & DB sqlite.
 permalink: posts/{{ title | slug }}/index.html
-date: '2025-04-07'
+date: '2026-04-09'
 tags: [fiche, flutter]
 ---
 

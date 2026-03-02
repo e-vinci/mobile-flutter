@@ -2,7 +2,7 @@
 title: Fiche 4
 description: Navigation & Provider.
 permalink: posts/{{ title | slug }}/index.html
-date: '2025-03-24'
+date: '2026-03-26'
 tags: [fiche, flutter]
 ---
 

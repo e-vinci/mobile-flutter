@@ -2,7 +2,7 @@
 title: Fiche 8
 description: Fichiers & Déploiement.
 permalink: posts/{{ title | slug }}/index.html
-date: '2025-04-21'
+date: '2026-04-23'
 tags: [fiche, flutter]
 ---
 

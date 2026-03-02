@@ -2,7 +2,7 @@
 title: Fiche 5
 description: API & JSON.
 permalink: posts/{{ title | slug }}/index.html
-date: '2025-03-31'
+date: '2026-04-02'
 tags: [fiche, flutter]
 ---
 

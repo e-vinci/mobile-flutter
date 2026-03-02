@@ -1,6 +1,6 @@
 {
-  "name": "Vinci Flutter 2026",
-  "description": "Site pour la matériel de cours Introduction à Flutter à la HE Vinci",
+  "name": "BINV2110 - Informatique mobile",
+  "description": "Site pour la matériel de cours de mobile à la HE Vinci",
   "url": "https://eleventyduo.netlify.app",
   "author": {
     "name": "Martin Van Aken",
@@ -14,25 +14,25 @@
       "external": false
     },
     {
-      "text": "A propos",
-      "url": "/about",
-      "external": false
+      "text": "GitHub",
+      "url": "https://github.com/e-vinci/mobile-flutter",
+      "external": true
     }
   ],
   "socialLinks": [
     {
-      "text": "Site de l'école",
-      "url": "https://vinci.be/",
-      "external": true
-    },
-    {
-      "text": "Moddle",
-      "url": "https://moodle.vinci.be/",
+      "text": "Moodle",
+      "url": "https://moodle.vinci.be/course/view.php?id=484",
       "external": true
     },
     {
       "text": "Documentation Flutter",
       "url": "https://flutter.dev/",
+      "external": true
+    },
+    {
+      "text": "GitHub",
+      "url": "https://github.com/e-vinci/mobile-flutter",
       "external": true
     }
   ],
