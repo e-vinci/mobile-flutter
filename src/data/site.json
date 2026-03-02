@@ -9,7 +9,7 @@
   "defaultSocialImage": "/images/default-social-image.png",
   "headerLinks": [
       {
-      "text": "Introduction",
+      "text": "Intro",
       "url": "/intro",
       "external": false
     },
