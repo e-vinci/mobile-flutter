@@ -8,6 +8,11 @@
   },
   "defaultSocialImage": "/images/default-social-image.png",
   "headerLinks": [
+      {
+      "text": "Introduction",
+      "url": "/intro",
+      "external": false
+    },
     {
       "text": "Fiches",
       "url": "/blog",
