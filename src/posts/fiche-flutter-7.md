@@ -2,9 +2,11 @@
 title: Fiche 7
 description: SMS & Localisation.
 permalink: posts/{{ title | slug }}/index.html
-date: '2025-04-14'
+date: '2026-04-16'
 tags: [fiche, flutter]
 ---
+
+# TODO: rework this fiche, the package flutter_sms doesn't work properly with recent versions of flutter. Moving to a tutorial about localisations and map integration.
 
 # Objectifs de la fiche
 

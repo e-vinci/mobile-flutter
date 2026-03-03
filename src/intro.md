@@ -56,4 +56,4 @@ Cette partie de l'évaluation est finale et ne peut pas être représentée en s
 
 ### Examen
 
-L'examen est un examen pratique d'une durée de 4h. Il vous sera demandé de coder une application mobile en flutter *sans usage d'internet ou de l'IA*. Un examen blanc vous permettra de vous évaluer.
+L'examen est un examen pratique d'une durée de 2h. Il vous sera demandé de coder une application mobile en flutter *sans usage d'internet ou de l'IA*. Un examen blanc vous permettra de vous évaluer.
