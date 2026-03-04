@@ -52,21 +52,37 @@ Pour les étudiants souhaitant travailler sur les machines de l’école, Androi
 
 # Repository pour les exercices
 
-Nous vous demandons de travailler avec GitHub, via GitHub Classroom, pour versionner les projets que vous allez créer. Veuillez accéder à l’assignement du cours de Mobile sur GitHub Classroom : <https://classroom.github.com/a/xYI6ODBa>
+Nous vous demandons de travailler avec GitHub, via GitHub Classroom, pour versionner les projets que vous allez créer. Veuillez accéder à l’assignement du cours de Mobile sur GitHub Classroom : <https://classroom.github.com/a/a1-LhUii>
 
-Loggez-vous au sein de GitHub via votre compte puis cliquez sur Accept this assignment. Rafraichissez votre page pour obtenir l’URL de votre web repo, par exemple _https://github.com/e-vinci/mobile_2025_exercices_sebstreb_.
+Loggez-vous au sein de GitHub via votre compte puis cliquez sur Accept this assignment. Votre repository sera créé et vous pourrez accéder à l’URL de votre web repo, par exemple _https://github.com/e-vinci/mobile_2026_exercices_sebstreb_.
 
-Cliquez sur l’URL de votre web repo. GitHub vous offre les instructions pour créer un nouveau repo local et le synchroniser avec votre GitHub repo. Créer un dossier mobile (ou donnez-lui le nom que vous voulez) sur votre machine à un endroit ne se trouvant pas sur un « cloud drive » comme OneDrive, Google Drive ou autre. 
+Créez un dossier mobile (ou donnez-lui le nom que vous voulez) sur votre machine à un endroit ne se trouvant pas sur un « cloud drive » comme OneDrive, Google Drive ou autre. Vous allez cloner votre repository GitHub dans ce dossier.
 
-C’est ce dossier que vous allez transformer en repo local en le liant à votre GitHub repo. Entrez dans ce dossier à l’aide de Git Bash. Vous pouvez ensuite tapez les commandes offertes par votre GitHub repo sous "…or create a new repository on the command line".
+Cliquez sur l’URL de votre web repo. Vous pouvez y retrouver quelques fichiers, comme un `README.md`, un `.gitignore`, un dossier `test` et un script `copy_test.dart`. Vous pouvez les consulter, mais ne les modifiez pas. Nous allons utiliser GitHub pour versionner les projets que vous allez créer, mais aussi pour vérifier votre avancement dans la matière du cours.
 
-Pour chaque exercice, faites attention à créer un nouveau projet au sein d’un dossier dans ce repository (se trouvant dans votre dossier mobile ou autre) sur votre machine. Vous pourrez de cette façon utiliser l’interface de Android studio pour effectuer des commits et des push. Nous vous demanderons à plusieurs moments au sein des fiches du cours de faire des commits sur ce repository avec un tag : 
+Dans le dossier `test`, vous pouvez trouver des tests automatisés qui seront utilisés pour vérifier que les objectifs du cours sont atteints. Ne modifiez pas ces tests, ils sont là pour vous aider à vérifier que votre code est correct. Vous pouvez toutefois utiliser le script `copy_test.dart` pour copier ces tests dans le dossier `test` de votre projet flutter, afin de les exécuter plus facilement depuis Android Studio. Pour cela, lancez ce script avec la commande suivante dans Git Bash :
+
+```bash
+dart copy_test.dart
+```
+
+Vous récupérez ainsi les tests dans chaque projet correctement créé. Vous pouvez les exécuter pour vérifier que votre code est correct, et ainsi vérifier que vous avez correctement réalisé les exercices. Nous réaliserons des tests automatisés sur votre code chaque vendredi la semaine d'après la fiche pour vérifier que les objectifs du cours sont atteints et compiler votre note d'évaluation continue.
+
+Récupérez l’URL de clonage du repository en cliquant sur le bouton Code et en copiant l’URL proposée. Utilisez cette URL pour cloner votre repository sur votre machine avec Git Bash. Par exemple, si votre URL de clonage est `https://github.com/e-vinci/mobile_2026_exercices_sebstreb.git`, vous pouvez utiliser la commande suivante dans Git Bash pour cloner votre repository dans le dossier mobile :
+
+```bash
+git clone https://github.com/e-vinci/mobile_2026_exercices_sebstreb.git
+```
+
+Pour chaque exercice, faites attention à créer un nouveau projet avec le nom correspondant au sein d’un dossier dans ce repository (se trouvant dans votre dossier mobile ou autre) sur votre machine. Vous pourrez de cette façon utiliser l’interface de Android studio pour effectuer des commits et des push. Nous vous demanderons à plusieurs moments au sein des fiches du cours de faire des commits sur ce repository avec un tag : 
 
 > Commit: `message de commit`
 
 Cela nous permettra de vérifier l’état de votre avancement dans la matière du cours, ou de vous aider en accédant à votre code si nécessaire. 
 
 Pour cette raison, nous vous demandons de bien vouloir suivre les messages de commits demandés. Vous pouvez faire d’autres commits intermédiaires si vous le souhaitez, mais nous nous attendons à retrouver ceux-là au minimum. Faites particulièrement attention aux commits correspondant à des objectifs du cours, dont le message commence par FXY.
+
+Nous exécuterons les tests automatisés sur base de l'état de votre repository aux différentes deadlines chaque semaine. Pensez donc bien à réaliser des commits réguliers et à pousser vos modifications pour que nous puissions suivre votre avancement.
 
 # Introduction au framework Flutter
 
