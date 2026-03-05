@@ -52,7 +52,7 @@ La résolution est offerte sur [stack overflow](https://stackoverflow.com/questi
 Pour les étudiants souhaitant travailler sur les machines de l’école, Android Studio et Flutter sont déjà installés. Il y a cependant certaines étapes à réaliser à chaque fois que vous vous connectez sur une machine pour la première fois pour que l’installation soit fonctionnelle :
 
 -	Ouvrez dans l’explorateur de fichier le dossier `C:\Progs\flutter`, ouvrez un Git Bash à cet emplacement et lancez la commande : `git config --global --add safe.directory '*'`
--	Au premier lancement d’Android Studio, n’importez pas les paramètres d’une version précédente. Vous devez y installer le plugin flutter. En créant un projet flutter, Android Studio ne trouve pas automatiquement le chemin du Flutter SDK path. Vous devez y indiquer le chemin `C\:Progs\flutter`. Un SDK API level 34 et un premier AVD sont en revanche déjà installés, il n’est pas nécessaire de réaliser ces étapes.
+-	Au premier lancement d’Android Studio, n’importez pas les paramètres d’une version précédente. Vous devez y installer le plugin flutter. En créant un projet flutter, Android Studio ne trouve pas automatiquement le chemin du Flutter SDK path. Vous devez y indiquer le chemin `C:\Progs\flutter`. Un SDK API level 34 et un premier AVD sont en revanche déjà installés, il n’est pas nécessaire de réaliser ces étapes.
 
 # Repository pour les exercices
 
