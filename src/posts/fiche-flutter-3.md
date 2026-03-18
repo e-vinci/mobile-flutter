@@ -113,9 +113,8 @@ class _MyAppState extends State<MyApp> {
                   ),
                   Switch(
                     value: color == "green",
-                    activeColor: Colors.green,
+                    activeThumbColor: Colors.green,
                     inactiveThumbColor: Colors.red,
-                    inactiveTrackColor: Colors.red.withOpacity(0.4),
                     onChanged: (value) => setColor(value ? "green" : "red"),
                   ),
                   const Text(
@@ -168,9 +167,8 @@ class MySwitch extends StatelessWidget {
         ),
         Switch(
           value: color == "green",
-          activeColor: Colors.green,
+          activeThumbColor: Colors.green,
           inactiveThumbColor: Colors.red,
-          inactiveTrackColor: Colors.red.withOpacity(0.4),
           onChanged: (value) => setColor(value ? "green" : "red"),
         ),
         const Text(
