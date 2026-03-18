@@ -278,7 +278,7 @@ Observations:
 
 ## Gestion d'un formulaire
 
-Nous allons maintenant découvrir comment afficher un formulaire et récupérer les inputs de l’utilisateur. Les équipes de flutter ont défini de nombreuses « recettes de cuisine » pour apprendre à écrire des formulaires. Toutes les recettes de cuisine pour gérer un formulaire sont données sur Flutter : [Forms](https://docs.flutter.dev/cookbook#forms). 
+Nous allons maintenant découvrir comment afficher un formulaire et récupérer les inputs de l’utilisateur. Les équipes de flutter ont défini de nombreuses « recettes de cuisine » pour apprendre à écrire des formulaires. Toutes les recettes de cuisine pour gérer un formulaire sont données sur Flutter : [Forms](https://docs.flutter.dev/cookbook/forms). 
 
 Nous vous recommandons de lire :
 -	tout ce qui concerne la validation d’un formulaire : [Build a form with validation](https://docs.flutter.dev/cookbook/forms/validation).
@@ -289,7 +289,7 @@ Voici un résumé des points importants :
 - Pour assurer la validation des champs d'un formulaire, il faut utiliser des widgets `Form` et un ou plusieurs `TextFormField`. Le 
 formulaire doit être lié à une `GlobalKey`. Chaque champs intègre ensuite sa logique de validation, et le bouton de soumission du formulaire vérifie l'état de la validation avant de réaliser son action.
 -	Si on n’a pas besoin de validation des champs d’un formulaire, on peut ne pas créer de `Form` et juste ajouter des `TextField` comme champs de texte.
-- Pour suivre les mises à jour d'un champs de texte, il y a deux options. Soit via une callback passée à un argument `onChanged`. Cette callback est alors appelée à chaque changement, et on peut y modifier une variable d'état suivant l'état du champs de texte. Soir via un `TextEditingController` passé à un argument `controller`. On peut alors simplement récupérer le contenu du champs de texte via sa propriété `text`, mais il ne faut pas oublier de `dispose` le controlleur.
+- Pour suivre les mises à jour d'un champs de texte, il y a deux options. Soit via une callback passée à un argument `onChanged`. Cette callback est alors appelée à chaque changement, et on peut y modifier une variable d'état suivant l'état du champs de texte. Soit via un `TextEditingController` passé à un argument `controller`. On peut alors simplement récupérer le contenu du champs de texte via sa propriété `text`, mais il ne faut pas oublier de `dispose` le controlleur.
 
 ## Formulaire simple
 
@@ -380,7 +380,7 @@ Veuillez créer un nouveau projet (New Flutter Project) nommé `ex3` dans votre 
 
 L’objectif de cet exercice est de créer une application pour enregistrer une liste de notes. Les notes sont caractérisées par un titre et un contenu. Commencez par définir un objet de données correspondant. 
 
-Afin de pouvoir manipuler ces objets au sein de listes, il est nécessaire de redéfinir l’opérateur == (l’équivalent de la fonction equals en Java) et la fonction hashCode. Android est capable de les générer pour vous en effectuant un clic droit, et en choisissant « ==() and hashCode » dans le menu Generate. Deux notes sont considérées comme équivalentes si elles ont le même titre.
+Afin de pouvoir manipuler ces objets au sein de listes, il est nécessaire de redéfinir l’opérateur == (l’équivalent de la fonction equals en Java) et la fonction hashCode. Android Studio est capable de les générer pour vous en effectuant un clic droit, et en choisissant « ==() and hashCode » dans le menu Generate. Deux notes sont considérées comme équivalentes si elles ont le même titre.
 
 > Commit: `F04.1 Représentation des données`
 

@@ -52,7 +52,7 @@ La résolution est offerte sur [stack overflow](https://stackoverflow.com/questi
 Pour les étudiants souhaitant travailler sur les machines de l’école, Android Studio et Flutter sont déjà installés. Il y a cependant certaines étapes à réaliser à chaque fois que vous vous connectez sur une machine pour la première fois pour que l’installation soit fonctionnelle :
 
 -	Ouvrez dans l’explorateur de fichier le dossier `C:\Progs\flutter`, ouvrez un Git Bash à cet emplacement et lancez la commande : `git config --global --add safe.directory '*'`
--	Au premier lancement d’Android Studio, n’importez pas les paramètres d’une version précédente. Vous devez y installer le plugin flutter. En créant un projet flutter, Android Studio ne trouve pas automatiquement le chemin du Flutter SDK path. Vous devez y indiquer le chemin `C\:Progs\flutter`. Un SDK API level 34 et un premier AVD sont en revanche déjà installés, il n’est pas nécessaire de réaliser ces étapes.
+-	Au premier lancement d’Android Studio, n’importez pas les paramètres d’une version précédente. Vous devez y installer le plugin flutter. En créant un projet flutter, Android Studio ne trouve pas automatiquement le chemin du Flutter SDK path. Vous devez y indiquer le chemin `C:\Progs\flutter`. Un SDK API level 34 et un premier AVD sont en revanche déjà installés, il n’est pas nécessaire de réaliser ces étapes.
 
 # Repository pour les exercices
 
@@ -64,13 +64,17 @@ Créez un dossier mobile (ou donnez-lui le nom que vous voulez) sur votre machin
 
 Cliquez sur l’URL de votre web repo. Vous pouvez y retrouver quelques fichiers, comme un `README.md`, un `.gitignore`, un dossier `test` et un script `copy_test.dart`. Vous pouvez les consulter, mais ne les modifiez pas. Nous allons utiliser GitHub pour versionner les projets que vous allez créer, mais aussi pour vérifier votre avancement dans la matière du cours.
 
-Dans le dossier `test`, vous pouvez trouver des tests automatisés qui seront utilisés pour vérifier que les objectifs du cours sont atteints. Ne modifiez pas ces tests, ils sont là pour vous aider à vérifier que votre code est correct. Vous pouvez toutefois utiliser le script `copy_test.dart` pour copier ces tests dans le dossier `test` de votre projet flutter, afin de les exécuter plus facilement depuis Android Studio. Pour cela, lancez ce script avec la commande suivante dans Git Bash :
+Dans le dossier `test`, vous pouvez trouver des tests automatisés qui seront utilisés pour vérifier que les objectifs du cours sont atteints. Ne modifiez pas ces tests, ils sont là pour vous aider à vérifier que votre code est correct. Vous pouvez toutefois utiliser le script `copy_test.dart` pour copier ces tests dans le dossier `test` de votre projet flutter, afin de les exécuter plus facilement depuis Android Studio. 
+
+Pour cela, vous devrez lancer la commande suivante dans Git Bash :
 
 ```bash
 dart copy_test.dart
 ```
 
 Vous récupérez ainsi les tests dans chaque projet correctement créé. Vous pouvez les exécuter pour vérifier que votre code est correct, et ainsi vérifier que vous avez correctement réalisé les exercices. Nous réaliserons des tests automatisés sur votre code chaque vendredi la semaine d'après la fiche pour vérifier que les objectifs du cours sont atteints et compiler votre note d'évaluation continue.
+
+/!\ La commande ne copie les tests que pour les fiches déjà commencée - il est donc normal qu'elle ne fasse rien du tout pour le moment.
 
 Récupérez l’URL de clonage du repository en cliquant sur le bouton Code et en copiant l’URL proposée. Utilisez cette URL pour cloner votre repository sur votre machine avec Git Bash. Par exemple, si votre URL de clonage est `https://github.com/e-vinci/mobile_2026_exercices_sebstreb.git`, vous pouvez utiliser la commande suivante dans Git Bash pour cloner votre repository dans le dossier mobile :
 
