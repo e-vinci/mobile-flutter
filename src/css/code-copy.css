@@ -1,0 +1,24 @@
+.copy-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-family: inherit;
+  color: var(--primary-text-color, #333);
+  background: var(--background-color, #fff);
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+pre:hover .copy-btn {
+  opacity: 1;
+}
+
+.copy-btn--copied {
+  color: #16a34a;
+  border-color: #16a34a;
+}
