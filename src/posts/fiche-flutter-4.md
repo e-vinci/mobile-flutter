@@ -404,7 +404,7 @@ dependencies:
     sdk: flutter
 ```
 
-Modifiez ensuite la fonction `main` du fichier `main.dart` de la façon suivante et réglez l'import de la fonction :
+Modifiez ensuite la fonction `main` du fichier `main.dart` de la façon suivante et réglez l'import de la fonction. Attention, choisissez bien l'import de `package:flutter_web_plugins/url_strategy.dart` et pas celui de `package:flutter_web_plugins/flutter_web_plugins.dart` qui peut causer des problèmes.
 
 ```dart
 void main() {
