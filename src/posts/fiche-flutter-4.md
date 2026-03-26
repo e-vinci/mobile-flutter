@@ -429,7 +429,7 @@ Avec des applications toujours plus complexes, il devient vite nécessaire de ra
 
 -	La couche *Model* correspond comme dans beaucoup de modèles architecturaux à la définition des données. Comme dans l’architecture fat-model, nous pourrons également retrouver dans cette couche des responsabilités supplémentaires comme la sérialisation ou l’accès aux données.
 -	La couche *View* correspond aux différents widgets qui vont composer nos écrans et leurs composants. Elle définit la structure et l’affichage de l’application. Pour bien séparer les responsabilités, nous allons déplacer la gestion de l’état de l’application vers la couche suivante.
--	La couche *View Model* correspond à la gestion de l’état partagé de l’application. C’est maintenant dans cette couche que nous allons enregistrer les variables d’état ainsi que les méthodes permettant leur modification. Les widgets n’ont alors plus qu’à faire s’inscrire aux view models et afficher l’application en fonction de leur état.
+-	La couche *View Model* correspond à la gestion de l’état partagé de l’application. C’est maintenant dans cette couche que nous allons enregistrer les variables d’état ainsi que les méthodes permettant leur modification. Les widgets n’ont alors plus qu’à s’inscrire aux view models et afficher l’application en fonction de leur état.
 
 Dans le projet de ce tutoriel, nous n’avons pas de couche *Model* comme les données utilisées sont juste un simple entier. Nous n’avons pas encore de couche *View Model*, cela viendra dans la section suivante. Nous pouvons par contre regrouper les fichiers de notre couche *View*. Créez un sous-dossier `views` dans le dossier `lib` et déplacez-y les fichiers contenant les écrans.
 
