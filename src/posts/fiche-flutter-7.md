@@ -21,7 +21,7 @@ Cette fiche a pour objectif de construire une application Flutter qui affiche le
 
 ## Introduction
 
-Pour commencer, créez un nouveau projet Flutter nommé `tuto6_redux` dans votre repository de cours.
+Pour commencer, créez un nouveau projet Flutter nommé `tuto7` dans votre repository de cours.
 
 Nous allons développer une application qui utilise l'API suivante :
 
