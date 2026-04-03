@@ -8,12 +8,12 @@ tags:
 
 # Objectifs de la fiche
 
-|  |  |
-|  |  |
-| F10 | Consommation d'une API REST |
-| F11 | Navigation avec go_router |
-| F12 | Intégration d'une carte OpenStreetMap |
-| F13 | Recherche et filtrage de données |
+| Identifiant | Objectif                              |
+| ----------- | ------------------------------------- |
+| F10         | Consommation d'une API REST           |
+| F11         | Navigation avec go_router             |
+| F12         | Intégration d'une carte OpenStreetMap |
+| F13         | Recherche et filtrage de données      |
 
 Cette fiche a pour objectif de construire une application Flutter qui affiche les fresques BD de Bruxelles à partir d'une API publique. L'application proposera une vue liste, une vue carte, une page détail et une recherche.
 
