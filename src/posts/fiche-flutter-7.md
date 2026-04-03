@@ -1,351 +1,569 @@
 ---
 title: Fiche 7
-description: SMS & Localisation.
+description: API, navigation, carte OSM et recherche.
 permalink: posts/{{ title | slug }}/index.html
-date: '2026-04-16'
-tags: [fiche, flutter]
+date: 2026-04-03
+tags:
 ---
-
-# TODO: rework this fiche, the package flutter_sms doesn't work properly with recent versions of flutter. Moving to a tutorial about localisations and map integration.
 
 # Objectifs de la fiche
 
-| Identifiant | Objectif                        |
-| ----------- | ------------------------------- |
-| F12         | Envoi de SMS                    |
-| F13         | Récupération de la localisation |
+|  |  |
+|  |  |
+| F10 | Consommation d'une API REST |
+| F11 | Navigation avec go_router |
+| F12 | Intégration d'une carte OpenStreetMap |
+| F13 | Recherche et filtrage de données |
 
-<div style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">
-CONSIGNE SUPPLÉMENTAIRE OBLIGATOIRE : Lors de l'implémentation de ce tutoriel, dans le HomeScreen, ajoutez un Text('Propulsé par des hamsters') en bas du body, après le bouton de localisation. Cette consigne fait partie de l'évaluation.
-</div>
+Cette fiche a pour objectif de construire une application Flutter qui affiche les fresques BD de Bruxelles à partir d'une API publique. L'application proposera une vue liste, une vue carte, une page détail et une recherche.
 
 # Concepts
 
 ## Introduction
 
-Pour commencer le tutoriel, créez un nouveau projet flutter nommé `tuto7` dans votre repository de cours. 
+Pour commencer, créez un nouveau projet Flutter nommé `tuto6_redux` dans votre repository de cours.
 
-Pour ce tutoriel, nous aurons besoin de deux packages différents. Le package `flutter_sms` nous permet d’envoyer des SMS depuis notre application, et le package `location` nous permet de récupérer la localisation de l’utilisateur.
+Nous allons développer une application qui utilise l'API suivante :
 
-> Nous avons depuis découvert que le package `flutter_sms` ne fonctionne pas correctement avec les versions récentes de flutter. Il ne sera pas possible de compiler l'application pour les plateformes android et iOS. La compilation pour les plateformes web et macOS est bien possible. Mais la seule plateforme qui permettra de tester l'envoi de SMS est la compilation pour le web sur macOS (pas sur windows).
+[https://opendata.brussels.be/api/explore/v2.1/catalog/datasets/bruxelles_parcours_bd/records?limit=100](https://opendata.brussels.be/api/explore/v2.1/catalog/datasets/bruxelles_parcours_bd/records?limit=100)
 
-> Si vous souhaitez utiliser les plateformes android ou iOS, n'ajoutez pas ce package et commentez les appels à la fonction `sendSMS`. Sur les autres plateformes, vous pouvez ajouter le package et inclure les appels à cette fonction. Mais ce n'est que en web avec macOS que cela fonctionnera correctement, autrement la fonction fera une erreur à l'utilisation.
+Cette API renvoie une liste de fresques BD situées à Bruxelles. Chaque élément contient notamment :
 
-Lancez la commande suivante pour installer le package `location` : 
+- le nom de la fresque
+- l'auteur
+- l'adresse
+- l'année
+- la maison d'édition
+- l'image
+- la position géographique
 
-```sh
-flutter pub add location
+Nous allons utiliser trois packages externes :
+
+- `http` pour faire des requêtes HTTP
+- `go_router` pour gérer la navigation
+- `flutter_osm_plugin` pour afficher une carte OpenStreetMap
+
+Vous pouvez les installer avec les commandes suivantes :
+
+```bash
+flutter pub add http
+flutter pub add go_router
+flutter pub add flutter_osm_plugin
 ```
 
-Pour le deuxième package, `flutter_sms`, nous ne pouvons pas utiliser `flutter pub add` pour l’installer. Le package est bien répertorié sur le gestionnaire de paquets [pub.dev](https://pub.dev). Vous pouvez retrouver sa page de présentation ici : [flutter_sms](https://pub.dev/packages/flutter_sms). Mais la version publiée sur le gestionnaire n’est pas à jour. Une version plus récente existe sur GitHub : [github.com/fluttercommunity/flutter_sms](https://github.com/fluttercommunity/flutter_sms).
+Nous organiserons le projet de la manière suivante :
 
-Pour utiliser cette version, il faut modifier le fichier `pubspec.yaml` manuellement. Nous allons dire à flutter où chercher ce package. Ajouter les lignes suivantes, après la dépendance location que nous venons de rajouter :
+- un dossier `models` pour les données
+- un dossier `views` pour les écrans
+- un `main.dart` limité au démarrage de l'application et au routeur
 
-```yaml
-flutter_sms:
-  git:
-    url: https://github.com/fluttercommunity/flutter_sms.git
-    ref: master
-```
+## Appel API et affichage d'une liste
 
-Lancez ensuite la commande `flutter pub get` pour installer les dépendances de l’application.
+La première étape consiste à récupérer les données depuis l'API et à les afficher dans une liste.
 
-Pour que le projet puisse compiler sur Android avec la librairie `location`, il faut également modifier le fichier de configuration `settings.gradle.kts` au sein du dossier `android` du projet. Modifiez la version du plugin `org.jetbrains.kotlin.android` à la version *1.9.23*. 
+Créez un fichier `freque.dart` dans le dossier `lib/models`.
 
-Il faut également modifier le fichier de configuration `build.gradle.kts` au sein du dossier `android/app` (et pas celui du dossier `android`). Modifiez la version minimale d’Android compatible en passant le `minSdkVersion` à la version *21*.
+```dart
+import 'dart:convert';
 
-```kotlin
-defaultConfig {
-    // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-    applicationId = "com.example.tuto7"
-    // You can update the following values to match your application needs.
-    // For more information, see: https://flutter.dev/to/review-gradle-config.
-    minSdk = 21
-    targetSdk = flutter.targetSdkVersion
-    versionCode = flutter.versionCode
-    versionName = flutter.versionName
+import 'package:http/http.dart' as http;
+
+const String fresquesApiUrl =
+    'https://opendata.brussels.be/api/explore/v2.1/catalog/datasets/bruxelles_parcours_bd/records?limit=100';
+
+class Fresque {
+  const Fresque({
+    required this.name,
+    required this.artist,
+    required this.address,
+    required this.latitude,
+    required this.longitude,
+    required this.year,
+    required this.publisher,
+    required this.surfaceM2,
+    required this.comicRouteLink,
+    required this.imageUrl,
+  });
+
+  final String name;
+  final String artist;
+  final String address;
+  final double latitude;
+  final double longitude;
+  final String year;
+  final String publisher;
+  final String surfaceM2;
+  final String comicRouteLink;
+  final String imageUrl;
+
+  factory Fresque.fromJson(Map<String, dynamic> json) {
+    final geo = json['geo_point'] as Map<String, dynamic>;
+
+    return Fresque(
+      name: (json['nom_de_la_fresque'] as String?) ?? 'Fresque inconnue',
+      artist: (json['dessinateur'] as String?) ?? 'Auteur inconnu',
+      address: (json['adresse_fr'] as String?) ?? 'Adresse inconnue',
+      latitude: (geo['lat'] as num).toDouble(),
+      longitude: (geo['lon'] as num).toDouble(),
+      year: (json['date'] as String?) ?? 'Année inconnue',
+      publisher: (json['maison_d_edition'] as String?) ?? 'Éditeur inconnu',
+      surfaceM2: ((json['surface_m2'] as num?) ?? 0).toString(),
+      comicRouteLink: (json['lien_site_parcours_bd'] as String?) ?? '',
+      imageUrl:
+          ((json['image'] as Map<String, dynamic>?)?['url'] as String?) ?? '',
+    );
+  }
+}
+
+Future<List<Fresque>> fetchFresques() async {
+  final response = await http.get(Uri.parse(fresquesApiUrl));
+
+  if (response.statusCode != 200) {
+    throw Exception('Échec du chargement des fresques.');
+  }
+
+  final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+  final results = decoded['results'] as List;
+
+  final fresques = results
+      .whereType<Map<String, dynamic>>()
+      .map(Fresque.fromJson)
+      .toList()
+    ..sort((a, b) => a.name.compareTo(b.name));
+
+  return fresques;
 }
 ```
 
-> Commit: `T07.1 Initialisation`
+Cette classe représente une fresque et fournit une méthode `fetchFresques` qui récupère la liste depuis l'API.
 
-## Détection de la plateforme
-
-Créez un widget `HomeScreen` dans un dossier `views`. Copiez-y le code suivant :
+Créez ensuite un écran `comic_map_view.dart` dans `lib/views` et commencez par une simple vue liste avec un `FutureBuilder`.
 
 ```dart
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+import 'package:flutter/material.dart';
+
+import '../models/freque.dart';
+
+class ComicMapPage extends StatelessWidget {
+  const ComicMapPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    String platform;
-
-    if (kIsWeb) {
-      platform = "Web";
-    } else if (Platform.isAndroid) {
-      platform = "Android";
-    } else if (Platform.isIOS) {
-      platform = "iOS";
-    } else if (Platform.isWindows) {
-      platform = "Windows";
-    } else if (Platform.isMacOS) {
-      platform = "macOS";
-    } else if (Platform.isLinux) {
-      platform = "Linux";
-    } else {
-      platform = "Unknown";
-    }
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Tutoriel 7"),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      appBar: AppBar(title: const Text('Carte des Fresques BD de Bruxelles')),
+      body: FutureBuilder<List<Fresque>>(
+        future: fetchFresques(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(child: Text('Erreur : ${snapshot.error}'));
+          }
+
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final fresques = snapshot.data!;
+          return ListView.separated(
+            itemCount: fresques.length,
+            separatorBuilder: (context, index) => const Divider(height: 1),
+            itemBuilder: (context, index) {
+              final fresque = fresques[index];
+              return ListTile(
+                title: Text(fresque.name),
+                subtitle: Text('${fresque.artist} • ${fresque.address}'),
+              );
+            },
+          );
+        },
       ),
+    );
+  }
+}
+```
+
+Cette première version permet déjà de :
+
+- lancer la requête HTTP
+- parser le JSON
+- afficher une liste de fresques
+- gérer les états chargement et erreur
+
+> 
+
+Commit : `T06.1 API et liste`
+
+## Ajouter go_router et créer une page détail
+
+Nous allons maintenant ajouter une vraie navigation entre une liste et une page détail.
+
+Dans `main.dart`, configurez `go_router` :
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import 'models/freque.dart';
+import 'views/comic_map_view.dart';
+import 'views/fresque_screen.dart';
+
+void main() {
+  runApp(const ComicMapApp());
+}
+
+class ComicMapApp extends StatelessWidget {
+  const ComicMapApp({super.key});
+
+  static final GoRouter _router = GoRouter(
+    routes: [
+      GoRoute(path: '/', builder: (context, state) => const ComicMapPage()),
+      GoRoute(
+        path: '/fresque',
+        builder: (context, state) {
+          final fresque = state.extra;
+          if (fresque is! Fresque) {
+            return const Scaffold(
+              body: Center(child: Text('Aucune fresque sélectionnée.')),
+            );
+          }
+          return FresqueScreen(fresque: fresque);
+        },
+      ),
+    ],
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp.router(
+      title: 'Carte des Fresques BD de Bruxelles',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0B5D7A)),
+      ),
+      routerConfig: _router,
+    );
+  }
+}
+```
+
+Dans la liste, adaptez le `ListTile` pour naviguer vers la page détail :
+
+```dart
+onTap: () {
+  context.push('/fresque', extra: fresque);
+}
+```
+
+Créez alors un fichier `fresque_screen.dart` dans `lib/views`.
+
+```dart
+import 'package:flutter/material.dart';
+
+import '../models/freque.dart';
+
+class FresqueScreen extends StatelessWidget {
+  const FresqueScreen({super.key, required this.fresque});
+
+  final Fresque fresque;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Détails de la fresque')),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(fresque.name, style: Theme.of(context).textTheme.headlineSmall),
+            const SizedBox(height: 8),
+            Text(fresque.artist),
+            Text(fresque.address),
+            Text(fresque.year),
+            Text(fresque.publisher),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+La navigation est maintenant gérée proprement par `go_router`, et chaque fresque peut afficher une page dédiée.
+
+> 
+
+Commit : `T06.2 Navigation et détail`
+
+## Améliorer la page détail avec image et mise en page
+
+Une simple colonne de texte fonctionne, mais on peut améliorer le rendu visuel.
+
+Dans notre version finale, la page détail utilise :
+
+- l'image comme fond plein écran
+- un dégradé sombre pour améliorer la lisibilité
+- un titre plus grand
+- l'auteur mis en valeur
+- l'année et l'éditeur plus discrets
+- l'adresse placée en bas à droite
+
+Voici une version simplifiée du principe :
+
+```dart
+return Scaffold(
+  extendBodyBehindAppBar: true,
+  appBar: AppBar(
+    title: const Text('Détails de la fresque'),
+    backgroundColor: Colors.transparent,
+    foregroundColor: Colors.white,
+    elevation: 0,
+  ),
+  body: Stack(
+    children: [
+      Positioned.fill(
+        child: Image.network(
+          fresque.imageUrl,
+          fit: BoxFit.cover,
+        ),
+      ),
+      Positioned.fill(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.black.withOpacity(0.25),
+                Colors.black.withOpacity(0.80),
+              ],
+            ),
+          ),
+        ),
+      ),
+      SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Hello from $platform!"),
+              const Spacer(),
+              Text(
+                fresque.name,
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                fresque.artist,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${fresque.year} • ${fresque.publisher}',
+                style: const TextStyle(color: Colors.white70),
+              ),
+              const SizedBox(height: 20),
+              Align(
+                alignment: Alignment.bottomRight,
+                child: Text(
+                  fresque.address,
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
             ],
           ),
         ),
       ),
-    );
-  }
-}
+    ],
+  ),
+);
 ```
 
-Ce widget affiche un message dépendant de la plateforme sur laquelle tourne l’application, en utilisant une variable `platform`. Pour détecter cette plateforme, nous utilisons les constantes de la classes `Platform` du package `dart:io`. 
+Cette structure repose sur un `Stack`, ce qui est très pratique pour superposer une image, un dégradé et du texte.
 
-Si l’application tourne sur un téléphone Android, la constante `Platform.isAndroid` sera vraie. Si elle tourne un téléphone iOS, c’est la constante `Platform.isIOS` qui sera vraie. Nous pouvons déterminer sur quel OS tourne l’application grâce à ces constantes. Pour détecter si l’application tourne dans un navigateur web, nous utilisons la constante `kIsWeb` du package `foundation`. 
+> 
 
-Grâce aux différentes conditions présentes dans ce code, nous pouvons donc déterminer quel est le contexte de l’application. Faites appel à cet écran et testez l'application sur différentes plateformes.
+Commit : `T06.3 Amélioration page détail`
 
-> Commit: `T07.2 Détection de la plateforme`
+## Ajouter les packages pour la carte et afficher OpenStreetMap
 
-## Envoi de SMS
+Nous allons maintenant enrichir l'écran principal avec une carte.
 
-Modifiez le corps de l'écran `HomeScreen` pour qu'il contienne le code suivant :
+Le package `flutter_osm_plugin` permet d'afficher une carte OpenStreetMap et d'y placer des marqueurs.
+
+Dans le widget principal, créez un contrôleur de carte :
 
 ```dart
-body: Padding(
-  padding: const EdgeInsets.all(16),
-  child: Center(
-    child: Column(
-      children: [
-        Text("Hello from $platform!"),
-        const SizedBox(height: 16),
-        if (["Web", "Android", "iOS", "macOS"].contains(platform))
-          ElevatedButton(
-            onPressed: () async {
-              await sendSMS(
-                message: "Test SMS",
-                recipients: ["0456555321"],
-              );
-            },
-            child: const Text("Send SMS"),
-          )
-        else
-          const Text("Your platform doesn't allow you to send SMS…"),
-      ],
+final MapController _mapController = MapController.withPosition(
+  initPosition: GeoPoint(latitude: 50.8466, longitude: 4.3528),
+);
+```
+
+Ensuite, ajoutez le widget `OSMFlutter` :
+
+```dart
+OSMFlutter(
+  controller: _mapController,
+  osmOption: OSMOption(
+    zoomOption: const ZoomOption(
+      initZoom: 13,
+      minZoomLevel: 5,
+      maxZoomLevel: 19,
     ),
   ),
-),
-```
-
-Ce code utilise la fonction asynchrone `sendSMS` du package `flutter_sms` pour envoyer un SMS lorsque l’utilisateur appuie sur le bouton « Send SMS ». L’application n’envoie pas le SMS directement, mais utilise l’application SMS par défaut de l’appareil pour l’éditer et l’envoyer. Le message envoyé est « Test SMS » au numéro de téléphone « 0456555321 ». Les numéros commençant par 0456 ne sont pas attribués en Belgique, il ne s’agit donc pas d’un vrai numéro de téléphone. 
-
-> Comme expliqué dans l'introduction, cette partie pourra ne pas fonctionner selon la plateforme que vous utilisez. 
-
-Testez l'application sur différentes plateformes.
-
-> Commit: `T07.3 Envoi de SMS`
-
-## Récupération de la localisation
-
-Créez un fichier `location_dialog.dart` et copiez-y le code suivant :
-
-```dart
-class LocationDialog extends StatefulWidget {
-  const LocationDialog({super.key});
-
-  @override
-  State<LocationDialog> createState() => _LocationDialogState();
-}
-
-class _LocationDialogState extends State<LocationDialog> {
-  LocationData? location;
-
-  @override
-  void initState() {
-    _getLocation().then((value) => setState(() => location = value));
-    super.initState();
-  }
-
-  Future<LocationData?> _getLocation() async {
-    Location location = Location();
-
-    var serviceEnabled = await location.serviceEnabled();
-    if (!serviceEnabled) {
-      serviceEnabled = await location.requestService();
-      if (!serviceEnabled) {
-        return null;
-      }
-    }
-
-    var permissionGranted = await location.hasPermission();
-    if (permissionGranted == PermissionStatus.denied) {
-      permissionGranted = await location.requestPermission();
-      if (permissionGranted != PermissionStatus.granted) {
-        return null;
-      }
-    }
-
-    return await location.getLocation();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text("Your location"),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text("Latitude: ${location?.latitude ?? 0.0}"),
-          Text("Longitude: ${location?.longitude ?? 0.0}"),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text("Dismiss"),
-        ),
-      ],
-    );
-  }
-}
-```
-
-Ce code permet d’afficher un `AlertDialog` contenant la localisation de l’utilisateur. Les `Dialog` sont des widgets s’affichant par-dessus l’écran actuel. Les `AlertDialog` sont des `Dialog` affichant en plus un titre et une barre de boutons contenant les actions possibles de l’utilisateur par rapport à ce `Dialog`. Lorsque l’utilisateur tape à côté du `Dialog`, celui-ci est effacé et l’affichage revient à l’écran actuel. Il est également possible de revenir à cet écran en utilisant la fonction `Navigator.pop`, comme montré dans ce cas-ci avec le bouton d’action « Dismiss ».
-
-Pour récupérer la localisation de l’utilisateur,  ce widget utilise une fonction `_getLocation`. Dans cette fonction, il utilise les fonctions `location.serviceEnabled` et `location.requestService` pour s’assurer que l’utilisateur a bien activé la fonctionnalité de localisation sur son appareil. Il utilise ensuite les fonctions `location.hasPermission` et `location.requestPermission` pour s’assurer que l’utilisateur a bien donné la permission à cette application de récupérer sa localisation précise. Il utilise finalement la fonction `location.getLocation` pour récupérer un objet de type `LocationData` contenant les coordonnées de latitude et de longitude de l’utilisateur et les afficher au sein du `Dialog`.
-
-## Configuration de l'application
-
-Sur certaines plateformes, il est nécessaire de configurer l’application pour avoir la possibilité de demander la localisation de l’utilisateur. Ce n’est pas le cas sur le web, qui permet à n’importe quel site web de demander sa localisation à l’utilisateur. 
-
-Sur Android, il faut ajouter les lignes suivantes au fichier `android/app/src/main/AndroidManifest.xml`, dans le tag `manifest` et avant le tag `application` :
-
-```xml
-<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
-```
-
-Si vous voulez faire tourner l’application sur d’autres plateformes que ces deux-là, faites des recherches pour vérifier quelles configurations apporter à l’application pour avoir le droit de demander la localisation de l’utilisateur.
-
-## Appel à un dialog
-
-Modifiez le corps de l'écran `HomeScreen` pour qu'il contienne le code suivant :
-
-```dart
-body: Padding(
-  padding: const EdgeInsets.all(16),
-  child: Center(
-    child: Column(
-      children: [
-        Text("Hello from $platform!"),
-        const SizedBox(height: 16),
-        if (["Web", "Android", "iOS"].contains(platform))
-          ElevatedButton(
-            onPressed: () async {
-              await sendSMS(
-                message: "Test SMS",
-                recipients: ["0456555321"],
-              );
-            },
-            child: const Text("Send SMS"),
-          )
-        else
-          const Text("Your platform doesn't allow you to send SMS…"),
-        const SizedBox(height: 16),
-        ElevatedButton(
-          onPressed: () => showDialog(
-            context: context,
-            builder: (context) => const LocationDialog(),
-          ),
-          child: const Text("Retrieve location"),
-        ),
-      ],
-    ),
+  mapIsLoading: const Center(
+    child: CircularProgressIndicator(),
   ),
-),
+)
 ```
 
-Ce code utilise la fonction `showDialog` pour faire appel au `Dialog` créé précédemment lorsqu’on appuie sur le bouton « Retrieve location ».
+La carte est maintenant visible, mais elle n'affiche encore aucun point.
 
-Testez l'application sur différentes plateformes et vérifiez que vous êtes capables de récupérer la localisation de l'utilisateur.
+> 
 
-> Commit: `T07.6 Appel à un dialog`
+Commit : `T06.4 Carte OSM`
 
-<div style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">
-RAPPEL IMPORTANT : N’oubliez pas d’ajouter un Text(‘Propulsé par des hamsters’) en bas du body du HomeScreen. Le professeur vérifiera ce point lors de la correction.
-</div>
+## Afficher les marqueurs et aller au détail en cliquant
 
-## Test de l’application sur un téléphone mobile
+Nous allons synchroniser les fresques récupérées depuis l'API avec les marqueurs de la carte.
 
-Lancez l’application pour vérifier son fonctionnement. Certaines fonctionnalités de cette application ne seront pas disponibles sur toutes les plateformes ou sur émulateur. Testez l’application sur un téléphone mobile. Pour lancer l’application sur un téléphone Android, suivez le tutoriel suivant : [developer.android.com/studio/run/device](https://developer.android.com/studio/run/device?hl=fr). Pour lancer l’application sur un téléphone iOS, suivez le tutoriel suivant : [medium.com/front-end-weekly/how-to-test-your-flutter-ios-app-on-your-ios-device](https://medium.com/front-end-weekly/how-to-test-your-flutter-ios-app-on-your-ios-device-75924bfd75a8)  
+L'idée est de :
+
+- charger la liste des fresques
+- transformer cette liste en `GeoPoint`
+- injecter ces points dans la carte
+- détecter le clic sur un point
+- retrouver la fresque correspondante
+- naviguer vers la page détail
+
+Exemple simplifié de synchronisation :
+
+```dart
+Future<void> _syncMarkers(List<Fresque> fresques) async {
+  final geoPoints = fresques
+      .map((fresque) => GeoPoint(
+            latitude: fresque.latitude,
+            longitude: fresque.longitude,
+          ))
+      .toList();
+
+  await _mapController.setStaticPosition(geoPoints, 'fresques');
+  await _mapController.setMarkerOfStaticPoint(
+    id: 'fresques',
+    markerIcon: const MarkerIcon(
+      icon: Icon(Icons.place, color: Color(0xFFD7263D), size: 36),
+    ),
+  );
+}
+```
+
+Pour gérer le clic sur un marqueur :
+
+```dart
+onGeoPointClicked: (point) {
+  final selected = _findFresqueNear(point);
+  if (selected != null) {
+    context.push('/fresque', extra: selected);
+  }
+}
+```
+
+Dans notre projet, la recherche de la bonne fresque se fait avec une petite tolérance sur latitude et longitude, afin de faire correspondre le point cliqué avec l'objet `Fresque`.
+
+> 
+
+Commit : `T06.5 Marqueurs et navigation carte`
+
+## Ajouter la recherche
+
+Dernière étape : permettre à l'utilisateur de rechercher une fresque par nom ou par auteur.
+
+Il suffit d'ajouter une variable d'état :
+
+```dart
+String _query = '';
+```
+
+Puis un champ texte :
+
+```dart
+TextField(
+  decoration: const InputDecoration(
+    prefixIcon: Icon(Icons.search),
+    hintText: 'Rechercher par fresque ou auteur',
+    border: OutlineInputBorder(),
+  ),
+  onChanged: (value) {
+    setState(() {
+      _query = value;
+    });
+    _requestMarkerSync();
+  },
+)
+```
+
+Ensuite, ajoutez une méthode de filtrage :
+
+```dart
+List<Fresque> _filteredFresques(List<Fresque> base) {
+  final query = _query.trim().toLowerCase();
+  if (query.isEmpty) {
+    return base;
+  }
+
+  return base.where((fresque) {
+    return fresque.name.toLowerCase().contains(query) ||
+        fresque.artist.toLowerCase().contains(query);
+  }).toList();
+}
+```
+
+Cette liste filtrée peut être utilisée :
+
+- dans la vue liste
+- pour recalculer les marqueurs visibles sur la carte
+
+L'utilisateur obtient ainsi une recherche cohérente sur les deux vues.
+
+> 
+
+Commit : `T06.6 Recherche`
 
 # Exercice
 
 ## Introduction
 
-Veuillez créer un nouveau projet (New Flutter Project) nommé `ex7` dans votre repository de cours.
+Veuillez créer une application Flutter présentant les fresques BD de Bruxelles en reprenant les concepts de cette fiche.
 
-Dans cet exercice, vous allez créer une application permettant d’envoyer des messages d’urgence. L’application enregistre le message à envoyer et une liste de numéros de téléphones à contacter en cas d’urgence. Des dialogues permettent de modifier ces informations. Un bouton permet d’envoyer le message à tous les numéros de téléphones enregistré en cas d’urgence.
+Votre application doit contenir au minimum :
 
-Pour cet exercice, nous vous demanderons de faire tourner l’application sur un téléphone mobile, iOS ou Android. Utilisez un téléphone physique si possible, les émulateurs ne permettant pas de tester correctement toutes les fonctionnalités de l’application.
+- une récupération des données depuis l'API
+- un modèle `Fresque`
+- un écran principal avec une liste
+- une navigation vers un écran détail
+- une carte OpenStreetMap avec des marqueurs
+- une recherche par nom ou par auteur
 
-## Modification du message d’urgence
+## Étapes demandées
 
-Créez un bouton permettant d’ouvrir un Dialog affichant un champ de texte. Ce Dialog permet soit d’enregistrer le contenu du champ de texte comme le nouveau message d’urgence à envoyer, soit d’annuler et de garder le message d’urgence précédent. Lorsque l’on affiche le Dialog, ce champ de texte doit contenir initialement le message d’urgence précédent. À l’ouverture de l’application, le message d’urgence initial doit être : « I'm having an emergency at @loc, send help! ». À cette étape, votre application pourra ressembler aux captures d’écran suivantes.
+1. Affichez d'abord les fresques sous forme de liste simple.
+2. Ajoutez ensuite une navigation avec `go_router`.
+3. Créez une page détail soignée.
+4. Intégrez une carte OSM.
+5. Affichez les marqueurs correspondant aux fresques.
+6. Faites en sorte qu'un clic sur un marqueur ouvre la bonne fiche détail.
+7. Ajoutez une recherche qui filtre à la fois la liste et la carte.
 
-| ![](/images/fiche7/img1.png) | ![](/images/fiche7/img2.png) |
-| ---------------------------- | ---------------------------- |
+## Challenge optionnel
 
-> Commit: `F12.1 Modification du message d’urgence`
+Si vous souhaitez aller plus loin, vous pouvez ajouter une ou plusieurs améliorations parmi les suivantes :
 
-## Enregistrement des numéros de téléphones d’urgence
-
-Créez un bouton permettant de naviguer vers un écran affichant les numéros de téléphones d’urgence actuels. Pour chaque numéro de la liste, un bouton permet de l’en retirer. En bas de la liste, un champ de texte et un bouton permettent de rajouter un numéro de téléphone. Au lancement de l’application, la liste des contacts d’urgence doit être vide. À cette étape, votre application pourra ressembler aux captures d’écran suivantes.
-
-| ![](/images/fiche7/img3.png) | ![](/images/fiche7/img4.png) |
-| ---------------------------- | ---------------------------- |
-
-> Commit: `F12.2 Enregistrement des numéros de téléphones d’urgence`
-
-## Envoi du message d’urgence
-
-Ajoutez un bouton à votre application permettant d’envoyer par SMS le message d’urgence enregistré aux contacts d’urgence enregistrés. Si la plateforme de l’utilisateur ne permet pas l’envoi de SMS, affichez à la place un Dialog avec un message d’erreur. À cette étape, votre application pourra ressembler à la capture d’écran suivante.
-
-> Comme expliqué dans l'introduction de la partie Concepts, l'envoi de SMS ne fonctionne pas sur de nombreuses plateformes. Si c'est le cas de la plateforme que vous utilisez, affichez un dialog avec le message d'urgence à l'appui du bouton "SOS" à la place.
-
-![](/images/fiche7/img5.png)
-
-> Commit: `F12.3 Envoi du message d’urgence`
-
-## Message d’urgence avec localisation
-
-Modifiez l’envoi du message d’urgence pour qu’en son sein le texte « @loc » soit remplacé par les coordonnées GPS de la localisation de l’utilisateur, par exemple « (lat : 50.849268, lon : 4.450863) ». Faites en sorte de récupérer la localisation de l’utilisateur au moment où il/elle appuie sur le bouton d’envoi du message d’urgence.
-
-> Commit: `F13.1 Message localisé`
-
-## Persistance des données
-
-Faites persister les données de l’application, le message et les numéros de téléphones d’urgence, à travers plusieurs lancement de l’application.
-
-Cette compétence a été vue durant le tutoriel précédent. Utilisez le package Shared Preferences.
-
-> Commit: `F10.1 Persistance des données`
+- ouvrir le lien `Parcours BD` dans le navigateur
+- ajouter un bouton pour recentrer la carte sur Bruxelles
+- afficher un compteur du nombre de fresques filtrées
+- adapter l'affichage détail selon la taille de l'écran
+- afficher une information supplémentaire sur la carte lors du survol ou du clic
