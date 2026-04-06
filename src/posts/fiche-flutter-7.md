@@ -992,4 +992,16 @@ Commit : `T06.9 J’y vais`
 
 # Exercice
 
+Maintenant que les touristes peuvent facilement retrouver les fresques de bande dessinées, nous allons les aider à se déplacer de manière agréable dans la ville grâce aux itinéraires vélo.
+
+Créez une nouvelle application flutter avec les fonctionalités suivantes:
+
+- Affichage d'une carte en home screen reprenant les itinéraires vélo
+- Chargement de ceux-ci depuis l'API ici: https://opendata.brussels.be/explore/dataset/itineraires-cyclables-regionaux-rbc/information/?disjunctive.icr&disjunctive.colour&disjunctive.balises&disjunctive.part&disjunctive.type&disjunctive.commune_gemeente&refine.colour=%23008C00&location=12,50.81364,4.25137&basemap=jawg.sunny
+- Notez que les trajets ont tous une couleurs (codée en RGB), servez vous en pour les différencier.
+
+Attention - les itinéraires ne sont pas des points mais des tracés - a nouveau regardez bien la structure de l'API - une carte est également disponible pour visualiser les données sur le site d'opendata.brussels.
+
+- Afficher sur un clic le détail de l'itinéraire (une carte avec juste cet itinéraire là) et son numéro ICR
+
 
