@@ -431,7 +431,7 @@ Pour les curieux.ses - sqflite_common_ffi_web réimplémente l'API (ie le fait d
 
 Avant d'aller plus loin dans notre application nous allons faire un premier test avec sqlite pour s'assurer que tout est bien installé et configuré. Ceci ne respecte pas les conseils que l'on vous a donné en terme de structure de code - le but ici n'est pas d'avoir une bonne architecture mais de s'assurer que tout fonctionne - dès que cela sera testé, nous allons voir comment organiser cela proprement.
 
-Nous allons ajouter une méthode (asychrhone) à notre fichier main.dart
+Nous allons ajouter une méthode (asynchrone) à notre fichier main.dart
 ```dart
 Future<Database> initDatabase() async {
   // Initialize your database here
