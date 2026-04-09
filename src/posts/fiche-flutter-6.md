@@ -88,7 +88,7 @@ Nous n'avons pas donné tous les détails ici, mais vous pouvez vous référer �
 
 Nous allons utiliser un premier package ici pour sauvegarder le theme - comme dans la fiche 3 notre utilisateur veut pouvoir configurer la couleur de l'application - et il ne veut pas devoir le refaire à chaque fois qu'il la réouvre.
 
-Nous allons pour cela utiliser un package flutter nommé [shared preferences](https://pub.dev/packages/shared_preferences). Celui ci permet de stocker des élements simple de manière persistante. Flutter étant multi plateforme, ceci est implémenté différent sur chaque target:
+Nous allons pour cela utiliser un package flutter nommé [shared preferences](https://pub.dev/packages/shared_preferences). Celui ci permet de stocker des élements simple de manière persistante. Flutter étant multi plateforme, ceci est implémenté différemment sur chaque target:
 
 | Platform | SharedPreferences                  | SharedPreferencesAsync/WithCache       |
 |----------|------------------------------------|----------------------------------------|
@@ -326,9 +326,9 @@ class ColorPicker extends StatelessWidget {
 }
 ```
 
-[ChoiceChip](https://api.flutter.dev/flutter/material/ChoiceChip-class.html) est un composant flutter qui affiche un "chip" (un composant clickable) avec une marque indiquant s'il est sélectionné ou non. Vous pouvez voir ceci comme une sorte de radio button ou d'altnerative plus visuelle a une combo box.
+[ChoiceChip](https://api.flutter.dev/flutter/material/ChoiceChip-class.html) est un composant flutter qui affiche un "chip" (un composant clickable) avec une marque indiquant s'il est sélectionné ou non. Vous pouvez voir ceci comme une sorte de radio button ou d'alternative plus visuelle à une combo box.
 
-Notre composant défini les couleurs possibles, et affiche un ColorChip par couleur. Quand le composant est sélectionné, il appelle une méthode "onColorSelected" qui est fourni en paramètre - l'idée est que ce n'est ce qui doit être fait avec la couleur seléctionnée n'est pas la responsabilité de ColorPicker.
+Notre composant défini les couleurs possibles, et affiche un ColorChip par couleur. Quand le composant est sélectionné, il appelle une méthode "onColorSelected" qui est fourni en paramètre - l'idée est que ce qui doit être fait avec la couleur seléctionnée n'est pas la responsabilité de ColorPicker.
 
 Reste à l'utiliser dans le composant Settings:
 
@@ -385,7 +385,7 @@ Les shared preferences vu plus haut ne permettent pas de sauvegarder des objets 
 
 ### sqlite et flutter
 
-[sqlite](https://www.sqlite.org/index.html) est une implémentation opensource complète d'un database engine connu pour être rapide et surtout léger (en taille). Ceci lui a permis d'être installé sur de nombreuses plateforme - en ce compris la majorité des téléphones portables. En d'autre mot c'est une alternative "portable" a des RDMS comme MySQL ou Postgresql.
+[sqlite](https://www.sqlite.org/index.html) est une implémentation opensource complète d'un database engine connu pour être rapide et surtout léger (en taille). Ceci lui a permis d'être installé sur de nombreuses plateforme - en ce compris la majorité des téléphones portables. En d'autre mot c'est une alternative "portable" a des RDBMS comme MySQL ou Postgresql.
 
 Flutter dispose du package [sqflite](https://pub.dev/packages/sqflite) pour interagir avec sqlite.
 
