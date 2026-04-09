@@ -2,7 +2,7 @@
 title: Fiche 7
 description: API, navigation, carte OSM et recherche.
 permalink: posts/{{ title | slug }}/index.html
-date: 2026-04-03
+date: 2026-04-16
 tags:
 ---
 
