@@ -51,7 +51,7 @@ final _router = GoRouter(
 
 Configurez le router dans main.dart.
 
-Créez déjà les écrans PostList, NewPost et Settings sous forme de Stateless Widget ("stless" pour les générer) dans un folder view avec pour chacun 
+Créez déjà les écrans PostList, NewPost et Settings sous forme de Stateless Widget ("stless" pour les générer) dans un folder `views` avec pour chacun 
 
 - un composant Scaffold
 - un body avec un simple Text() avec le nom de la page 
@@ -328,7 +328,7 @@ class ColorPicker extends StatelessWidget {
 
 [ChoiceChip](https://api.flutter.dev/flutter/material/ChoiceChip-class.html) est un composant flutter qui affiche un "chip" (un composant clickable) avec une marque indiquant s'il est sélectionné ou non. Vous pouvez voir ceci comme une sorte de radio button ou d'alternative plus visuelle à une combo box.
 
-Notre composant défini les couleurs possibles, et affiche un ColorChip par couleur. Quand le composant est sélectionné, il appelle une méthode "onColorSelected" qui est fourni en paramètre - l'idée est que ce qui doit être fait avec la couleur seléctionnée n'est pas la responsabilité de ColorPicker.
+Notre composant défini les couleurs possibles, et affiche un ChoiceChip par couleur. Quand le composant est sélectionné, il appelle une méthode "onColorSelected" qui est fourni en paramètre - l'idée est que ce qui doit être fait avec la couleur seléctionnée n'est pas la responsabilité de ColorPicker.
 
 Reste à l'utiliser dans le composant Settings:
 

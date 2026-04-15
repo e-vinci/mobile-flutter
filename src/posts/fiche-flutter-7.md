@@ -10,10 +10,8 @@ tags:
 
 | Identifiant | Objectif                              |
 | ----------- | ------------------------------------- |
-| F10         | Consommation d'une API REST           |
-| F11         | Navigation avec go_router             |
 | F12         | Intégration d'une carte OpenStreetMap |
-| F13         | Recherche et filtrage de données      |
+| F13         | Localisation de l'utilisateur         |
 
 Cette fiche a pour objectif de construire une application Flutter qui affiche les fresques BD de Bruxelles à partir d'une API publique. L'application proposera une vue liste, une vue carte, une page détail et une recherche.
 
@@ -43,11 +41,12 @@ Ouvrez l'API dans votre browser et notez:
 - Ce que contient chaque objet
 - Les noms et types des champs
 
-Nous allons utiliser trois packages externes :
+Nous allons utiliser quatre packages externes :
 
 - `http` pour faire des requêtes HTTP
 - `go_router` pour gérer la navigation
 - `flutter_osm_plugin` pour afficher une carte OpenStreetMap
+- `geolocator` pour accéder à la localisation de l'utilisateur
 
 Vous pouvez les installer avec les commandes suivantes :
 
@@ -55,6 +54,7 @@ Vous pouvez les installer avec les commandes suivantes :
 flutter pub add http
 flutter pub add go_router
 flutter pub add flutter_osm_plugin
+flutter pub add geolocator
 ```
 
 Nous organiserons le projet de la manière suivante :
@@ -67,18 +67,18 @@ Nous organiserons le projet de la manière suivante :
 
 La première étape consiste à récupérer les données depuis l'API et à les afficher dans une liste.
 
-Créez un fichier `fresque.dart` dans le dossier `lib/models`.
+Créez un fichier `mural.dart` dans le dossier `lib/models`.
 
 ```dart
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-const String fresquesApiUrl =
+const String muralsApiUrl =
     'https://opendata.brussels.be/api/explore/v2.1/catalog/datasets/bruxelles_parcours_bd/records?limit=100';
 
-class Fresque {
-  const Fresque({
+class Mural {
+  const Mural({
     required this.name,
     required this.artist,
     required this.address,
@@ -102,10 +102,10 @@ class Fresque {
   final String comicRouteLink;
   final String imageUrl;
 
-  factory Fresque.fromJson(Map<String, dynamic> json) {
+  factory Mural.fromJson(Map<String, dynamic> json) {
     final geo = json['geo_point'] as Map<String, dynamic>;
 
-    return Fresque(
+    return Mural(
       name: (json['nom_de_la_fresque'] as String?) ?? 'Fresque inconnue',
       artist: (json['dessinateur'] as String?) ?? 'Auteur inconnu',
       address: (json['adresse_fr'] as String?) ?? 'Adresse inconnue',
@@ -121,8 +121,8 @@ class Fresque {
   }
 }
 
-Future<List<Fresque>> fetchFresques() async {
-  final response = await http.get(Uri.parse(fresquesApiUrl));
+Future<List<Mural>> fetchMurals() async {
+  final response = await http.get(Uri.parse(muralsApiUrl));
 
   if (response.statusCode != 200) {
     throw Exception('Échec du chargement des fresques.');
@@ -131,24 +131,22 @@ Future<List<Fresque>> fetchFresques() async {
   final decoded = jsonDecode(response.body) as Map<String, dynamic>;
   final results = decoded['results'] as List;
 
-  final fresques = results
-      .whereType<Map<String, dynamic>>()
-      .map(Fresque.fromJson)
-      .toList()
-    ..sort((a, b) => a.name.compareTo(b.name));
+  final murals =
+      results.whereType<Map<String, dynamic>>().map(Mural.fromJson).toList()
+        ..sort((a, b) => a.name.compareTo(b.name));
 
-  return fresques;
+  return murals;
 }
 ```
 
-Cette classe représente une fresque et fournit une méthode `fetchFresques` qui récupère la liste depuis l'API.
+Cette classe représente une fresque murale et fournit une méthode `fetchMurals` qui récupère la liste depuis l'API.
 
-Créez ensuite un écran `home_screen.dart` dans `lib/views` et commencez par une simple vue liste avec un `FutureBuilder`.
+Créez ensuite un écran `home_screen.dart` dans `lib/views` qui affiche une simple vue de liste de toutes les fresques murales récupérées avec un `FutureBuilder`.
 
 ```dart
 import 'package:flutter/material.dart';
 
-import '../models/fresque.dart';
+import '../models/mural.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -156,9 +154,9 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Carte des Fresques BD de Bruxelles')),
-      body: FutureBuilder<List<Fresque>>(
-        future: fetchFresques(),
+      appBar: AppBar(title: const Text('Fresques murales BD de Bruxelles')),
+      body: FutureBuilder<List<Mural>>(
+        future: fetchMurals(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(child: Text('Erreur : ${snapshot.error}'));
@@ -168,15 +166,15 @@ class HomeScreen extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final fresques = snapshot.data!;
+          final murals = snapshot.data!;
           return ListView.separated(
-            itemCount: fresques.length,
-            separatorBuilder: (context, index) => const Divider(height: 1),
+            itemCount: murals.length,
+            separatorBuilder: (context, index) => const Divider(),
             itemBuilder: (context, index) {
-              final fresque = fresques[index];
+              final mural = murals[index];
               return ListTile(
-                title: Text(fresque.name),
-                subtitle: Text('${fresque.artist} • ${fresque.address}'),
+                title: Text(mural.name),
+                subtitle: Text('${mural.artist} • ${mural.address}'),
               );
             },
           );
@@ -196,81 +194,23 @@ Cette première version permet déjà de :
 
 Assurez vous d'appeller la HomeScreen à partir du fichier main, lancez l'application pour vérifier que vous avez bien une liste de fresquess.
 
-> 
-
-Commit : `T06.1 API et liste`
+> Commit : `T07.1 API et liste`
 
 ## Ajouter go_router et créer une page détail
 
 Nous allons maintenant ajouter une vraie navigation entre une liste et une page détail.
 
-Dans `main.dart`, configurez `go_router` :
-
-```dart
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-
-import 'models/fresque.dart';
-import 'views/fresque_screen.dart';
-import 'views/home_screen.dart';
-
-void main() {
-  runApp(const ComicMapApp());
-}
-
-class ComicMapApp extends StatelessWidget {
-  const ComicMapApp({super.key});
-
-  static final GoRouter _router = GoRouter(
-    routes: [
-      GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
-      GoRoute(
-        path: '/fresque',
-        builder: (context, state) {
-          final fresque = state.extra;
-          if (fresque is! Fresque) {
-            return const Scaffold(
-              body: Center(child: Text('Aucune fresque sélectionnée.')),
-            );
-          }
-          return FresqueScreen(fresque: fresque);
-        },
-      ),
-    ],
-  );
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Carte des Fresques BD de Bruxelles',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0B5D7A)),
-      ),
-      routerConfig: _router,
-    );
-  }
-}
-```
-
-Dans la liste, adaptez le `ListTile` pour naviguer vers la page détail :
-
-```dart
-onTap: () {
-  context.push('/fresque', extra: fresque);
-}
-```
-
-Créez alors un fichier `fresque_screen.dart` dans `lib/views`.
+Créez une page de détail `mural_screen.dart` dans `lib/views` :
 
 ```dart
 import 'package:flutter/material.dart';
 
-import '../models/fresque.dart';
+import '../models/mural.dart';
 
-class FresqueScreen extends StatelessWidget {
-  const FresqueScreen({super.key, required this.fresque});
+class MuralScreen extends StatelessWidget {
+  const MuralScreen({super.key, required this.mural});
 
-  final Fresque fresque;
+  final Mural mural;
 
   @override
   Widget build(BuildContext context) {
@@ -281,12 +221,12 @@ class FresqueScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(fresque.name, style: Theme.of(context).textTheme.headlineSmall),
+            Text(mural.name, style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 8),
-            Text(fresque.artist),
-            Text(fresque.address),
-            Text(fresque.year),
-            Text(fresque.publisher),
+            Text(mural.artist),
+            Text(mural.address),
+            Text(mural.year),
+            Text(mural.publisher),
           ],
         ),
       ),
@@ -295,15 +235,70 @@ class FresqueScreen extends StatelessWidget {
 }
 ```
 
+Modifiez le fichier `main.dart` pour configurer une configuration de routage avec `go_router` :
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import 'models/mural.dart';
+import 'views/home_screen.dart';
+import 'views/mural_screen.dart';
+
+void main() => runApp(const MuralMapApp());
+
+final _router = GoRouter(
+  routes: [
+    GoRoute(
+      path: '/',
+      builder: (context, state) => const HomeScreen(),
+      routes: [
+        GoRoute(
+          path: '/mural',
+          builder: (context, state) {
+            final mural = state.extra;
+            if (mural is! Mural) {
+              return Scaffold(
+                appBar: AppBar(title: const Text('Détail de la fresque')),
+                body: const Center(child: Text('Aucune fresque sélectionnée.')),
+              );
+            }
+            return MuralScreen(mural: mural);
+          },
+        ),
+      ],
+    ),
+  ],
+);
+
+class MuralMapApp extends StatelessWidget {
+  const MuralMapApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
+      title: 'Fresques murales BD de Bruxelles',
+      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
+      routerConfig: _router,
+    );
+  }
+}
+```
+
+Dans le HomeScreen, ajoutez ce paramètre au `ListTile` pour naviguer vers la page détail quand on clique dessus en passant la fresque sélectionnée en argument :
+
+```dart
+onTap: () => context.go('/mural', extra: mural)
+```
+
 La navigation est maintenant gérée proprement par `go_router`, et chaque fresque peut afficher une page dédiée.
 
-> 
-
-Commit : `T06.2 Navigation et détail`
+> Commit : `T07.2 Navigation et détail`
 
 ## Améliorer la page détail avec image et mise en page
 
-Une simple colonne de texte fonctionne, mais on peut améliorer le rendu visuel.
+Dans la page de détail, une simple colonne de texte fonctionne, mais on peut améliorer le rendu visuel.
 
 Dans notre version finale, la page détail utilise :
 
@@ -314,7 +309,7 @@ Dans notre version finale, la page détail utilise :
 - l'année et l'éditeur plus discrets
 - l'adresse placée en bas à droite
 
-Voici une version simplifiée du principe :
+Modifiez le `body` de `MuralScreen` pour obtenir ce résultat :
 
 ```dart
 return Scaffold(
@@ -328,10 +323,7 @@ return Scaffold(
   body: Stack(
     children: [
       Positioned.fill(
-        child: Image.network(
-          fresque.imageUrl,
-          fit: BoxFit.cover,
-        ),
+        child: Image.network(mural.imageUrl, fit: BoxFit.cover),
       ),
       Positioned.fill(
         child: DecoratedBox(
@@ -340,50 +332,69 @@ return Scaffold(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.black.withOpacity(0.25),
-                Colors.black.withOpacity(0.80),
+                Colors.black.withValues(alpha: 0.25),
+                Colors.black.withValues(alpha: 0.80),
               ],
             ),
           ),
         ),
       ),
-      SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Spacer(),
-              Text(
-                fresque.name,
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+      Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          children: [
+            const Spacer(), // Push content to the bottom
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.mural.name,
+                        style: Theme.of(context).textTheme.displaySmall
+                            ?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        widget.mural.artist,
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(color: Colors.white),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${widget.mural.year} • ${widget.mural.publisher}',
+                        style: Theme.of(context).textTheme.bodyLarge
+                            ?.copyWith(color: Colors.white70),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                fresque.artist,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: Colors.white,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      mural.address,
+                      textAlign: TextAlign.right,
+                      style: Theme.of(context).textTheme.bodyLarge
+                          ?.copyWith(color: Colors.white70),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "no mini-map yet",
+                      textAlign: TextAlign.right,
+                      style: Theme.of(context).textTheme.bodyLarge
+                          ?.copyWith(color: Colors.white30),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${fresque.year} • ${fresque.publisher}',
-                style: const TextStyle(color: Colors.white70),
-              ),
-              const SizedBox(height: 20),
-              Align(
-                alignment: Alignment.bottomRight,
-                child: Text(
-                  fresque.address,
-                  textAlign: TextAlign.right,
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
       ),
     ],
@@ -395,17 +406,18 @@ Cette structure repose sur un `Stack`, ce qui est très pratique pour superposer
 
 Notez les nouveaux éléments utilisés:
 
+- extendBodyBehindAppBar permet d'étendre le body derrière l'appbar pour que l'image puisse occuper tout l'écran
+- Positioned.fill permet de positionner un widget pour qu'il remplisse tout l'espace disponible dans le Stack
 - LinearGradient permet de faire un dégradé de couleurs qui combiné à de l'opacité et a la superposition avec l'image donne cette impression
-- Positioned.fill permet de positionner un éléments à l'aide de valeur top, right, left, bottom - ce qui devrait vous rappelez quelque chose
+- crossAxisAlignment permettent d'aligner les éléments d'une colonne ou d'une ligne sur un côté spécifique
+- Spacer est un widget invisible qui prend tout l'espace disponible, ce qui permet de pousser le contenu vers le bas
+- copyWith sur les TextStyle permet de partir d'un style existant et de ne modifier que certains paramètres (ici la couleur et le poids de la police)
 
-
-> 
-
-Commit : `T06.3 Amélioration page détail`
+> Commit : `T07.3 Amélioration page détail`
 
 ## Basculer entre liste et carte : l'enum et le Switch
 
-Notre application n'affiche pour l'instant qu'une liste. Nous allons préparer l'arrivée de la carte en ajoutant un moyen de basculer entre les deux vues.
+Pour l'instant, la page d'accueil de l'application n'affiche les fresques qu'une liste. Nous allons préparer l'arrivée de l'affichage des fresques sur une carte en ajoutant un moyen de basculer entre les deux vues.
 
 ### L'enum
 
@@ -432,7 +444,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  MainView _currentView = MainView.list;
+  MainView _currentView = MainView.map;
+
+  void changeView(bool switchToMap) =>
+      setState(() => _currentView = switchToMap ? MainView.map : MainView.list);
 
   @override
   Widget build(BuildContext context) {
@@ -447,21 +462,21 @@ Nous utilisons un `Switch` pour basculer entre les deux vues. Il prend un `bool`
 
 ```dart
 appBar: AppBar(
-  title: const Text('Carte des Fresques BD de Bruxelles'),
+  title: const Text('Fresques murales BD de Bruxelles'),
   actions: [
     Row(
       children: [
-        const Icon(Icons.view_list_outlined),
+        const Icon(Icons.view_list_outlined), // Icon for list view
         Switch(
           value: _currentView == MainView.map,
-          onChanged: (value) {
+          onChanged: (switchToMap) {
             setState(() {
-              _currentView = value ? MainView.map : MainView.list;
+              _currentView = switchToMap ? MainView.map : MainView.list;
             });
           },
         ),
-        const Icon(Icons.map_outlined),
-        const SizedBox(width: 8),
+        const Icon(Icons.map_outlined), // Icon for map view
+        const SizedBox(width: 8), // Spacing on the right of the switch
       ],
     ),
   ],
@@ -486,41 +501,36 @@ return ListView.separated(
 
 Lancez l'application et vérifiez que le Switch bascule bien entre la liste et le placeholder.
 
-> 
+> Commit : `T07.4 Enum et Switch`
 
-Commit : `T06.4 Enum et Switch`
-
-## Extraire les widgets ComicList et ComicMap
+## Extraire les widgets MuralList et MuralMap
 
 Notre `HomeScreen` va bientôt devenir complexe. C'est le bon moment pour extraire la liste et la carte dans leurs propres widgets, dans des fichiers séparés. Le widget principal restera responsable de l'état et de la logique ; les sous-widgets s'occupent uniquement de l'affichage.
 
-Créez un fichier `lib/views/comic_list.dart` :
+Créez un fichier `lib/views/mural_list.dart` :
 
 ```dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../models/fresque.dart';
+import '../models/mural.dart';
 
-class ComicList extends StatelessWidget {
-  const ComicList({super.key, required this.fresques});
+class MuralList extends StatelessWidget {
+  const MuralList({super.key, required this.murals});
 
-  final List<Fresque> fresques;
+  final List<Mural> murals;
 
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
-      itemCount: fresques.length,
-      separatorBuilder: (context, index) => const Divider(height: 1),
+      itemCount: murals.length,
+      separatorBuilder: (context, index) => const Divider(),
       itemBuilder: (context, index) {
-        final fresque = fresques[index];
+        final mural = murals[index];
         return ListTile(
-          title: Text(fresque.name),
-          subtitle: Text('${fresque.artist} • ${fresque.address}'),
-          trailing: const Icon(Icons.chevron_right, size: 20),
-          onTap: () {
-            context.push('/fresque', extra: fresque);
-          },
+          title: Text(mural.name),
+          subtitle: Text('${mural.artist} • ${mural.address}'),
+          onTap: () => context.go('/mural', extra: mural),
         );
       },
     );
@@ -528,17 +538,17 @@ class ComicList extends StatelessWidget {
 }
 ```
 
-Créez ensuite un fichier `lib/views/comic_map.dart` :
+Créez ensuite un fichier `lib/views/mural_map.dart` :
 
 ```dart
 import 'package:flutter/material.dart';
 
-import '../models/fresque.dart';
+import '../models/mural.dart';
 
-class ComicMap extends StatelessWidget {
-  const ComicMap({super.key, required this.fresques});
+class MuralMap extends StatelessWidget {
+  const MuralMap({super.key, required this.murals});
 
-  final List<Fresque> fresques;
+  final List<Mural> murals;
 
   @override
   Widget build(BuildContext context) {
@@ -550,40 +560,38 @@ class ComicMap extends StatelessWidget {
 Dans `home_screen.dart`, remplacez les deux blocs inline par les nouveaux widgets, et ajoutez les imports correspondants :
 
 ```dart
-import 'comic_list.dart';
-import 'comic_map.dart';
+import 'mural_list.dart';
+import 'mural_map.dart';
 ```
 
 ```dart
-if (_currentView == MainView.map) {
-  return ComicMap(fresques: fresques);
+switch (_currentView) {
+  case MainView.list:
+    return MuralList(murals: murals);
+  case MainView.map:
+    return MuralMap(murals: murals);
 }
-return ComicList(fresques: fresques);
 ```
 
 L'application doit se comporter exactement comme avant. Vérifiez-le, puis commitez : c'est un refactoring pur.
 
-> 
-
-Commit : `T06.5 Extraction des widgets`
+> Commit : `T07.5 Extraction des widgets`
 
 ## Ajouter les packages pour la carte et afficher OpenStreetMap
 
-Nous allons maintenant remplacer le placeholder de `ComicMap` par une vraie carte.
+Nous allons maintenant remplacer le placeholder de `MuralMap` par une vraie carte.
 
-Le package `flutter_osm_plugin` permet d'afficher une carte OpenStreetMap et d'y placer des marqueurs.
+Le package `flutter_osm_plugin` permet d'afficher une carte OpenStreetMap et d'y placer des marqueurs. Cette librairie ne fonctionne que sur mobile et en web, pas sur desktop. Si vous développez sur desktop, vous pouvez tester la carte en lançant l'application en mode web.
 
-Commencez par convertir `ComicMap` en `StatefulWidget` — la carte a besoin d'un contrôleur qui doit rester en vie entre les rebuilds. Dans le state, déclarez le contrôleur :
+La carte a besoin d'un contrôleur qui doit rester en vie entre les rebuilds. Comme les contrôleurs de formulaires, les `MapController` doivent être libérés manuellement pour éviter les fuites de mémoire. 
+
+Commencez par convertir `MuralMap` en `StatefulWidget`. Dans le state, déclarez le contrôleur :
 
 ```dart
-final MapController _mapController = MapController.withPosition(
+final _mapController = MapController.withPosition(
   initPosition: GeoPoint(latitude: 50.8466, longitude: 4.3528),
 );
-```
 
-N'oubliez pas de le libérer dans `dispose` :
-
-```dart
 @override
 void dispose() {
   _mapController.dispose();
@@ -591,7 +599,9 @@ void dispose() {
 }
 ```
 
-Dans la méthode `build` de `_ComicMapState`, remplacez le `Center` placeholder par le widget `OSMFlutter` :
+ Nous initialisons la carte centrée sur les coordonnées 50.8466, 4.3528. Il s'agit de la position centrale de Bruxelles, ce qui est un bon point de départ pour afficher les fresques.
+
+Dans la méthode `build` de `_MuralMapState`, remplacez le `Center` placeholder par le widget `OSMFlutter` :
 
 ```dart
 @override
@@ -614,37 +624,36 @@ Widget build(BuildContext context) {
 
 La carte est maintenant visible, mais elle n'affiche encore aucun point.
 
-> 
-
-Commit : `T06.6 Carte OSM`
+> Commit : `T07.6 Carte OSM`
 
 ## Afficher les marqueurs et naviguer vers le détail
 
-Nous allons placer un marqueur pour chaque fresque et naviguer vers la page détail au clic.
+Nous allons placer un marqueur pour chaque fresque et naviguer vers la page détail lorsque l'on clique sur un marqueur.
 
 ### Placer les marqueurs au démarrage de la carte
 
 `OSMFlutter` fournit un callback `onMapIsReady` appelé une fois que la carte native est prête. C'est le bon endroit pour injecter les marqueurs.
 
-Dans `_ComicMapState`, ajoutez la méthode suivante :
+Dans `_MuralMapState`, ajoutez la méthode suivante :
 
 ```dart
-Future<void> _onMapReady(bool isReady) async {
+void _onMapReady(bool isReady) {
   if (!isReady) return;
-  final geoPoints = widget.fresques
-      .map((f) => GeoPoint(latitude: f.latitude, longitude: f.longitude))
-      .toList();
-  await _mapController.setStaticPosition(geoPoints, 'fresques');
-  await _mapController.setMarkerOfStaticPoint(
-    id: 'fresques',
-    markerIcon: const MarkerIcon(
-      icon: Icon(Icons.place, color: Color(0xFFD7263D), size: 36),
-    ),
-  );
+  final geoPoints = widget.murals.map((mural) {
+    return GeoPoint(latitude: mural.latitude, longitude: mural.longitude);
+  }).toList();
+  for (final geoPoint in geoPoints) {
+    _mapController.addMarker(
+      geoPoint,
+      markerIcon: const MarkerIcon(
+        icon: Icon(Icons.place, color: Colors.red, size: 32),
+      ),
+    );
+  }
 }
 ```
 
-Les deux appels sont `async` car ils communiquent avec la couche native. `setStaticPosition` enregistre les positions, `setMarkerOfStaticPoint` définit l'icône à utiliser.
+Cette méthode convertit la liste de fresques en une liste de `GeoPoint`, puis ajoute un marqueur pour chaque point sur la carte. Le marqueur utilise une icône simple fournie par Flutter.
 
 Passez le callback à `OSMFlutter` :
 
@@ -658,58 +667,55 @@ OSMFlutter(
 
 ### Naviguer au clic sur un marqueur
 
-`OSMFlutter` fournit un callback `onGeoPointClicked` qui reçoit le `GeoPoint` cliqué. Il faut retrouver la `Fresque` correspondante:
+`OSMFlutter` fournit un callback `onGeoPointClicked` qui reçoit le `GeoPoint` cliqué. Il faut retrouver la fresque correspondante:
 
 ```dart
-  Fresque? _findFresqueNear(GeoPoint point) {
-    for (final fresque in widget.fresques) {
-      if (fresque.latitude == point.latitude &&
-          fresque.longitude == point.longitude) {
-        return fresque;
-      }
-    }
-    return null;
-  }
+void _onMarkerTap(GeoPoint point) {
+  final mural = widget.murals.firstWhere(
+    (mural) =>
+        mural.latitude == point.latitude &&
+        mural.longitude == point.longitude,
+  );
+  context.go('/mural', extra: mural);
+}
 ```
 
 Puis dans `OSMFlutter` :
 
 ```dart
-onGeoPointClicked: (point) {
-  final selected = _findFresqueNear(point);
-  if (selected != null) {
-    context.push('/fresque', extra: selected);
-  }
-},
+OSMFlutter(
+  controller: _mapController,
+  onMapIsReady: _onMapReady,
+  onGeoPointClicked: _onMarkerTap,
+  // ...
+)
 ```
 
 ### Garder la carte en vie avec IndexedStack
 
-Avec un simple `if/else` dans `HomeScreen`, `ComicMap` serait détruit chaque fois que l'on bascule vers la liste — et la carte se rechargerait à chaque retour. Pour éviter cela, remplacez le `if/else` par un `IndexedStack` :
+Avec un simple switch dans `HomeScreen`, la carte est détruite chaque fois que l'on bascule vers la liste et elle doit se recharger à chaque fois qu'on veut la réafficher. Pour éviter cela, remplacez le switch par un `IndexedStack` :
 
 ```dart
-IndexedStack(
-  index: _currentView == MainView.map ? 0 : 1,
+return IndexedStack(
+  index: _currentView == MainView.map ? 1 : 0,
   children: [
-    ComicMap(fresques: fresques),
-    ComicList(fresques: fresques),
+    MuralList(murals: murals),
+    MuralMap(murals: murals),
   ],
-),
-```
+);
+``` 
 
 `IndexedStack` garde tous ses enfants en vie et n'affiche que celui dont l'index correspond. La carte reste donc initialisée en arrière-plan pendant que l'on consulte la liste.
 
-> 
-
-Commit : `T06.7 Marqueurs et navigation carte`
+> Commit : `T07.7 Marqueurs et navigation carte`
 
 ## Ajouter une mini-carte sur la page détail
 
-Pour donner à l’utilisateur un repère géographique immédiat, nous allons afficher une petite carte dans le coin inférieur droit de `FresqueScreen`, juste en dessous de l’adresse.
+Pour donner à l’utilisateur un repère géographique immédiat, nous allons afficher une petite carte dans le coin inférieur droit de `MuralScreen`, juste en dessous de l’adresse.
 
 ### Convertir en StatefulWidget
 
-`FresqueScreen` doit gérer le cycle de vie d’un `MapController`. Convertissez-le en `StatefulWidget`, initialisez le contrôleur dans `initState` centré sur la position de la fresque, et libérez-le dans `dispose` :
+`MuralScreen` doit gérer le cycle de vie d’un `MapController`. Convertissez-le en `StatefulWidget`, initialisez le contrôleur dans `initState` centré sur la position de la fresque, et libérez-le dans `dispose` :
 
 ```dart
 late final MapController _miniMapController;
@@ -719,8 +725,8 @@ void initState() {
   super.initState();
   _miniMapController = MapController.withPosition(
     initPosition: GeoPoint(
-      latitude: widget.fresque.latitude,
-      longitude: widget.fresque.longitude,
+      latitude: widget.mural.latitude,
+      longitude: widget.mural.longitude,
     ),
   );
 }
@@ -732,21 +738,22 @@ void dispose() {
 }
 ```
 
+Contrairement à la carte principale, la position de la mini-carte est centrée sur la fresque au lieu d'une localisation fixe dans Bruxelles. Puisque la fresque est un argument du widget, on y accède avec `widget.mural`, tel que vu précédemment. Seulement, cette information n’est pas directement disponible au moment de la création du widget, il faut donc attendre que le widget soit monté pour créer le contrôleur. C'est pourquoi on utilise `initState` plutôt que d'initialiser le contrôleur directement dans le corps de la classe `_MuralScreenState`. Le mot clé `late` indique que la variable sera initialisée plus tard, et garantit que nous ne tenterons pas d'accéder au contrôleur avant qu'il ne soit correctement créé.
+
 ### Placer le marqueur au démarrage
 
-Même principe que pour `ComicMap` : utilisez `onMapIsReady` pour placer un marqueur unique à la position de la fresque.
+Même principe que pour `MuralMap`, on utilise `onMapIsReady` pour placer un marqueur. On affiche ici un marqueur unique à la position de la fresque.
 
 ```dart
-Future<void> _onMiniMapReady(bool isReady) async {
+void _onMiniMapReady(bool isReady) {
   if (!isReady) return;
-  await _miniMapController.setStaticPosition(
-    [GeoPoint(latitude: widget.fresque.latitude, longitude: widget.fresque.longitude)],
-    'location',
-  );
-  await _miniMapController.setMarkerOfStaticPoint(
-    id: 'location',
+  _miniMapController.addMarker(
+    GeoPoint(
+      latitude: widget.mural.latitude,
+      longitude: widget.mural.longitude,
+    ),
     markerIcon: const MarkerIcon(
-      icon: Icon(Icons.place, color: Color(0xFFD7263D), size: 24),
+      icon: Icon(Icons.place, color: Colors.red, size: 32),
     ),
   );
 }
@@ -754,241 +761,140 @@ Future<void> _onMiniMapReady(bool isReady) async {
 
 ### Intégrer la mini-carte dans le layout
 
-Dans la ligne du bas, remplacez le `ConstrainedBox` de l’adresse par une `Column` qui empile l’adresse au-dessus de la mini-carte. `ClipRRect` arrondit les coins ; le zoom est fixé et bloqué min/max pour éviter que l’utilisateur ne dézoome :
+Remplacez le `Text` "no mini-map yet" par l'affichage de la mini-carte :
 
 ```dart
-Column(
-  crossAxisAlignment: CrossAxisAlignment.end,
-  mainAxisSize: MainAxisSize.min,
-  children: [
-    ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 180),
-      child: Text(widget.fresque.address, textAlign: TextAlign.right, /* ... */),
-    ),
-    const SizedBox(height: 8),
-    ClipRRect(
-      borderRadius: BorderRadius.circular(10),
-      child: SizedBox(
-        width: 160,
-        height: 120,
-        child: OSMFlutter(
-          controller: _miniMapController,
-          osmOption: OSMOption(
-            showZoomController: false,
-            zoomOption: const ZoomOption(
-              initZoom: 16,
-              minZoomLevel: 16,
-              maxZoomLevel: 16,
-            ),
-          ),
-          onMapIsReady: _onMiniMapReady,
+ClipRRect(
+  borderRadius: BorderRadius.circular(10),
+  child: SizedBox(
+    width: MediaQuery.sizeOf(context).width > 800
+        ? 300
+        : 150,
+    height: MediaQuery.sizeOf(context).width > 800
+        ? 160
+        : 120,
+    child: OSMFlutter(
+      controller: _miniMapController,
+      onMapIsReady: _onMiniMapReady,
+      osmOption: OSMOption(
+        showZoomController: false,
+        zoomOption: const ZoomOption(
+          initZoom: 16,
+          minZoomLevel: 5,
+          maxZoomLevel: 19,
         ),
       ),
     ),
-  ],
+  ),
 ),
 ```
 
-> 
+Le widget est encapsulé dans un `ClipRRect` pour arrondir les coins, et sa taille s'adapte à la largeur de l'écran pour rester lisible sur mobile. La carte est centrée sur la fresque et le zoom est plus élevé initiallement pour montrer clairement sa position.
 
-Commit : `T06.8 Mini-carte sur le détail`
+> Commit : `T07.8 Mini-carte sur le détail`
 
-## J’y vais — localisation et fresque la plus proche
+## Localisation de l'utilisateur et distance
 
-Nous allons ajouter un bouton « J’y vais » dans l’AppBar. Il localise l’utilisateur, trouve la fresque la plus proche, et ouvre sa page détail avec la distance affichée. La position est également marquée sur la carte principale.
+Nous allons maintenant utiliser le package `geolocator` pour accéder à la localisation de l'utilisateur. Lorsque l'utilisateur affiche la page de détail d'une fresque, il peut voir sa propre position sur la mini-carte, ainsi que la distance qui le sépare de la fresque.
 
 ### Les permissions de localisation
 
-Accéder à la position GPS nécessite une autorisation explicite de l’utilisateur — c’est une règle de sécurité commune à toutes les plateformes. Sur le web, le navigateur affiche une popup de confirmation dès que l’application demande la localisation. Sur mobile, cette demande est gérée par le système d’exploitation.
+Afin de pouvoir accéder à la localisation de l'utilisateur, l'application doit d'abord obtenir les permissions nécessaires. Sur les plateformes mobiles, cela implique de demander explicitement à l'utilisateur l'autorisation d'accéder à sa position. Sur le web, le navigateur gère cette demande et affiche une popup de confirmation lorsque l'application tente d'accéder à la localisation. Le package `geolocator` fournit une API unifiée pour vérifier et demander ces permissions de manière transparente, quel que soit la plateforme.
 
-Le package `geolocator` (déjà ajouté au projet) expose une API unifiée pour vérifier et demander cette permission avant d’accéder aux coordonnées.
+Sur mobile, il est également nécessaire de configurer les permissions dans les fichiers de configuration de l'application pour que le système d'exploitation autorise l'accès à la localisation.
 
-### Demander la permission et obtenir la position
-
-Dans `HomeScreen`, ajoutez un état pour la position de l’utilisateur et un état de chargement :
-
-```dart
-GeoPoint? _userLocation;
-bool _isLocating = false;
+Pour android, ajoutez les permissions suivantes dans `android/app/src/main/AndroidManifest.xml` :
+```
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 ```
 
-La méthode `_onJyVais` gère le flux complet — permission, position, fresque la plus proche, navigation :
+Pour iOS, ajoutez les clés suivantes dans `ios/Runner/Info.plist` :
+```xml
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>Cette application utilise votre localisation pour calculer la distance avec les fresques.</string>
+```
+
+Finalement, modifiez le fichier `main.dart` pour demander la permission et obtenir la position de l'utilisateur au lancement de l'application. Stockez la position dans une variable globale pour pouvoir y accéder depuis les différentes pages :
 
 ```dart
-Future<void> _onJyVais() async {
-  if (_isLocating || _fresques.isEmpty) return;
-  setState(() => _isLocating = true);
-  try {
-    var permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Localisation refusée.')),
-        );
-      }
-      return;
-    }
+Position? _userPosition;
 
-    final position = await Geolocator.getCurrentPosition();
-    final nearest = _nearestFresque(position);
-    if (nearest == null || !mounted) return;
+Future<void> _locateUser() async {
+  var permission = await Geolocator.checkPermission();
 
-    final distM = Geolocator.distanceBetween(
-      position.latitude, position.longitude,
-      nearest.latitude, nearest.longitude,
-    );
-
-    setState(() {
-      _userLocation = GeoPoint(latitude: position.latitude, longitude: position.longitude);
-    });
-
-    context.push('/fresque', extra: (fresque: nearest, distanceM: distM));
-  } finally {
-    if (mounted) setState(() => _isLocating = false);
+  // permission is not granted, request it
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
   }
-}
-```
 
-On vérifie d’abord la permission existante avant d’en demander une nouvelle — sur le web, `requestPermission` déclenche la popup du navigateur. Si l’utilisateur refuse, on affiche un `SnackBar`. `distanceBetween` renvoie la distance en mètres entre deux paires de coordonnées.
-
-### Trouver la fresque la plus proche
-
-```dart
-Fresque? _nearestFresque(Position position) {
-  Fresque? nearest;
-  double minDist = double.infinity;
-  for (final fresque in _fresques) {
-    final d = Geolocator.distanceBetween(
-      position.latitude, position.longitude,
-      fresque.latitude, fresque.longitude,
-    );
-    if (d < minDist) {
-      minDist = d;
-      nearest = fresque;
-    }
+  // permission is still not granted, or denied forever, we can't get location
+  if (permission == LocationPermission.denied ||
+      permission == LocationPermission.deniedForever) {
+    return;
   }
-  return nearest;
+
+  _userPosition = await Geolocator.getCurrentPosition();
+}
+
+void main() {
+  _locateUser();
+  runApp(const MuralMapApp());
 }
 ```
 
-Pour que `_fresques` soit disponible ici, il faut le stocker en état dans `HomeScreen` (comme dans la version initiale avec `initState`) :
+Modifiez ensuite `MuralScreen` pour récupérer la position de l'utilisateur et calculer la distance entre celle-ci et la fresque, et l'afficher sous la surface :
 
 ```dart
-List<Fresque> _fresques = const [];
+class MuralScreen extends StatefulWidget {
+  const MuralScreen({super.key, required this.mural, this.userPosition});
 
-@override
-void initState() {
-  super.initState();
-  _fresquesFuture = fetchFresques().then((fresques) {
-    if (mounted) setState(() => _fresques = fresques);
-    return fresques;
-  });
+  final Mural mural;
+  final Position? userPosition;
+
+  @override
+  State<MuralScreen> createState() => _MuralScreenState();
 }
-```
 
-### Ajouter le bouton dans l’AppBar
-
-```dart
-IconButton(
-  icon: _isLocating
-      ? const SizedBox(
-          width: 20, height: 20,
-          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-        )
-      : const Icon(Icons.near_me),
-  tooltip: "J'y vais",
-  onPressed: _isLocating ? null : _onJyVais,
-),
-```
-
-Le spinner remplace l’icône pendant la requête GPS pour indiquer que quelque chose est en cours.
-
-### Afficher la distance sur la page détail
-
-Dans `FresqueScreen`, ajoutez un paramètre optionnel `distanceM` et une méthode de formatage :
-
-```dart
-final double? distanceM;
-
-String _formatDistance(double distM) {
-  if (distM < 1000) return '${distM.round()} m';
-  return '${(distM / 1000).toStringAsFixed(1)} km';
-}
-```
-
-Affichez-la dans la colonne de gauche, sous la surface :
-
-```dart
-if (widget.distanceM != null) ...[
-  const SizedBox(height: 4),
-  Text(
-    'À ${_formatDistance(widget.distanceM!)}',
-    style: textTheme.bodySmall?.copyWith(
-      color: Colors.white,
-      fontWeight: FontWeight.w600,
+// à la fin de la méthode _onMiniMapReady, après avoir ajouté le marqueur de la fresque
+final userPosition = widget.userPosition;
+if (userPosition != null) {
+  _miniMapController.addMarker(
+    GeoPoint(
+      latitude: userPosition.latitude,
+      longitude: userPosition.longitude,
     ),
-  ),
-],
-```
-
-### Mettre à jour le routeur
-
-Le routeur doit maintenant accepter deux types d’`extra` : une simple `Fresque` (depuis la liste) ou un record contenant la fresque et la distance (depuis le bouton) :
-
-```dart
-GoRoute(
-  path: '/fresque',
-  builder: (context, state) {
-    final extra = state.extra;
-    if (extra is ({Fresque fresque, double distanceM})) {
-      return FresqueScreen(fresque: extra.fresque, distanceM: extra.distanceM);
-    }
-    if (extra is Fresque) {
-      return FresqueScreen(fresque: extra);
-    }
-    return const Scaffold(
-      body: Center(child: Text('Aucune fresque sélectionnée.')),
-    );
-  },
-),
-```
-
-Les records Dart (syntaxe `({Type champ, ...})`) permettent de passer plusieurs valeurs typées sans créer une classe dédiée.
-
-### Afficher la position sur la carte
-
-Passez `_userLocation` à `ComicMap` :
-
-```dart
-ComicMap(fresques: fresques, userLocation: _userLocation),
-```
-
-Dans `ComicMap`, ajoutez le paramètre et gérez le marqueur via `_placeUserMarker`, appelée depuis `_onMapReady` (si déjà disponible) et depuis `didUpdateWidget` (quand la valeur change après coup) :
-
-```dart
-Future<void> _placeUserMarker(GeoPoint location) async {
-  if (_userMarkerPoint != null) {
-    await _mapController.removeMarker(_userMarkerPoint!);
-  }
-  _userMarkerPoint = location;
-  await _mapController.addMarker(
-    location,
     markerIcon: const MarkerIcon(
-      icon: Icon(Icons.my_location, color: Colors.blue, size: 28),
+      icon: Icon(Icons.my_location, color: Colors.red, size: 32),
     ),
   );
 }
+
+// au début de la méthode build, avant de retourner le Scaffold
+double? distance;
+
+var userPosition = widget.userPosition;
+if (userPosition != null) {
+  distance = Geolocator.distanceBetween(
+    userPosition.latitude,
+    userPosition.longitude,
+    widget.mural.latitude,
+    widget.mural.longitude,
+  );
+}
+
+// en dessous du ClipRRect de la mini-carte
+const SizedBox(height: 8),
+Text(
+  "Distance : ${distance != null ? '${distance.toStringAsFixed(2)} m' : '--- m'}",
+  style: Theme.of(context).textTheme.bodyMedium
+      ?.copyWith(color: Colors.white70),
+),
 ```
 
-`removeMarker` supprime le marqueur précédent si l’utilisateur appuie à nouveau sur le bouton. `addMarker` place un marqueur dynamique (contrairement à `setStaticPosition` qui gère des groupes).
+Tout ceci va permettre d'afficher la distance entre l'utilisateur et la fresque sur la page de détail, ainsi que de montrer la position de l'utilisateur sur la mini-carte. Avec tout ceci, notre application est complète !
 
-> 
-
-Commit : `T06.9 J’y vais`
+> Commit : `T07.9 J’y vais`
 
 # Exercice
 
