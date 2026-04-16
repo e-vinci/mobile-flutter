@@ -484,7 +484,7 @@ appBar: AppBar(
 Dans le `FutureBuilder`, utilisez `_currentView` pour décider quoi afficher. La vue carte sera un simple placeholder pour l'instant :
 
 ```dart
-final fresques = snapshot.data!;
+final murals = snapshot.data!;
 
 if (_currentView == MainView.map) {
   return const Center(child: Text('Carte à venir...'));
