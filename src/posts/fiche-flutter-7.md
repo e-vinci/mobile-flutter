@@ -1,6 +1,6 @@
 ---
 title: Fiche 7
-description: API, navigation, carte OSM et recherche.
+description: API, navigation, carte OSM et localisation.
 permalink: posts/{{ title | slug }}/index.html
 date: 2026-04-16
 tags:
@@ -192,7 +192,7 @@ Cette première version permet déjà de :
 - afficher une liste de fresques
 - gérer les états chargement et erreur
 
-Assurez vous d'appeller la HomeScreen à partir du fichier main, lancez l'application pour vérifier que vous avez bien une liste de fresquess.
+Assurez vous d'appeler la HomeScreen à partir du fichier main, lancez l'application pour vérifier que vous avez bien une liste de fresques.
 
 > Commit : `T07.1 API et liste`
 
@@ -254,7 +254,7 @@ final _router = GoRouter(
       builder: (context, state) => const HomeScreen(),
       routes: [
         GoRoute(
-          path: '/mural',
+          path: 'mural',
           builder: (context, state) {
             final mural = state.extra;
             if (mural is! Mural) {
@@ -352,7 +352,7 @@ return Scaffold(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.mural.name,
+                        mural.name,
                         style: Theme.of(context).textTheme.displaySmall
                             ?.copyWith(
                               color: Colors.white,
@@ -361,13 +361,13 @@ return Scaffold(
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        widget.mural.artist,
+                        mural.artist,
                         style: Theme.of(context).textTheme.headlineSmall
                             ?.copyWith(color: Colors.white),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '${widget.mural.year} • ${widget.mural.publisher}',
+                        '${mural.year} • ${mural.publisher}',
                         style: Theme.of(context).textTheme.bodyLarge
                             ?.copyWith(color: Colors.white70),
                       ),
@@ -417,7 +417,7 @@ Notez les nouveaux éléments utilisés:
 
 ## Basculer entre liste et carte : l'enum et le Switch
 
-Pour l'instant, la page d'accueil de l'application n'affiche les fresques qu'une liste. Nous allons préparer l'arrivée de l'affichage des fresques sur une carte en ajoutant un moyen de basculer entre les deux vues.
+Pour l'instant, la page d'accueil de l'application n'affiche les fresques que sous forme de liste. Nous allons préparer l'arrivée de l'affichage des fresques sur une carte en ajoutant un moyen de basculer entre les deux vues.
 
 ### L'enum
 
@@ -469,11 +469,7 @@ appBar: AppBar(
         const Icon(Icons.view_list_outlined), // Icon for list view
         Switch(
           value: _currentView == MainView.map,
-          onChanged: (switchToMap) {
-            setState(() {
-              _currentView = switchToMap ? MainView.map : MainView.list;
-            });
-          },
+          onChanged: changeView,
         ),
         const Icon(Icons.map_outlined), // Icon for map view
         const SizedBox(width: 8), // Spacing on the right of the switch
@@ -764,15 +760,15 @@ void _onMiniMapReady(bool isReady) {
 Remplacez le `Text` "no mini-map yet" par l'affichage de la mini-carte :
 
 ```dart
+// au début de la méthode build, avant de retourner le Scaffold
+final isWide = MediaQuery.sizeOf(context).width > 800;
+
+// À la place du Text "no mini-map yet"
 ClipRRect(
   borderRadius: BorderRadius.circular(10),
   child: SizedBox(
-    width: MediaQuery.sizeOf(context).width > 800
-        ? 300
-        : 150,
-    height: MediaQuery.sizeOf(context).width > 800
-        ? 160
-        : 120,
+    width: isWide ? 300 : 150,
+    height: isWide ? 160 : 120,
     child: OSMFlutter(
       controller: _miniMapController,
       onMapIsReady: _onMiniMapReady,
@@ -789,7 +785,7 @@ ClipRRect(
 ),
 ```
 
-Le widget est encapsulé dans un `ClipRRect` pour arrondir les coins, et sa taille s'adapte à la largeur de l'écran pour rester lisible sur mobile. La carte est centrée sur la fresque et le zoom est plus élevé initiallement pour montrer clairement sa position.
+Le widget est encapsulé dans un `ClipRRect` pour arrondir les coins, et sa taille s'adapte à la largeur de l'écran pour rester lisible sur mobile. La carte est centrée sur la fresque et le zoom est plus élevé initialement pour montrer clairement sa position.
 
 > Commit : `T07.8 Mini-carte sur le détail`
 
@@ -804,7 +800,7 @@ Afin de pouvoir accéder à la localisation de l'utilisateur, l'application doit
 Sur mobile, il est également nécessaire de configurer les permissions dans les fichiers de configuration de l'application pour que le système d'exploitation autorise l'accès à la localisation.
 
 Pour android, ajoutez les permissions suivantes dans `android/app/src/main/AndroidManifest.xml` :
-```
+```xml
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 ```
@@ -865,7 +861,7 @@ if (userPosition != null) {
       longitude: userPosition.longitude,
     ),
     markerIcon: const MarkerIcon(
-      icon: Icon(Icons.my_location, color: Colors.red, size: 32),
+      icon: Icon(Icons.my_location, color: Colors.blue, size: 32),
     ),
   );
 }
@@ -890,11 +886,14 @@ Text(
   style: Theme.of(context).textTheme.bodyMedium
       ?.copyWith(color: Colors.white70),
 ),
+
+// Dans main.dart, passez la position de l'utilisateur à la page de détail via le routeur :
+return MuralScreen(mural: mural, userPosition: _userPosition);
 ```
 
 Tout ceci va permettre d'afficher la distance entre l'utilisateur et la fresque sur la page de détail, ainsi que de montrer la position de l'utilisateur sur la mini-carte. Avec tout ceci, notre application est complète !
 
-> Commit : `T07.9 J’y vais`
+> Commit : `T07.9 Localisation utilisateur et distance`
 
 # Exercice
 
