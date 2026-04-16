@@ -633,16 +633,19 @@ Nous allons placer un marqueur pour chaque fresque et naviguer vers la page dét
 Dans `_MuralMapState`, ajoutez la méthode suivante :
 
 ```dart
-void _onMapReady(bool isReady) {
+Future<void> _onMapReady(bool isReady) async {
   if (!isReady) return;
   final geoPoints = widget.murals.map((mural) {
     return GeoPoint(latitude: mural.latitude, longitude: mural.longitude);
   }).toList();
   for (final geoPoint in geoPoints) {
-    _mapController.addMarker(
+    await _mapController.addMarker(
       geoPoint,
       markerIcon: const MarkerIcon(
-        icon: Icon(Icons.place, color: Colors.red, size: 32),
+        iconWidget: SizedBox.square(
+          dimension: 48,
+          child: Icon(Icons.place, color: Colors.red, size: 48),
+        ),
       ),
     );
   }
@@ -741,15 +744,18 @@ Contrairement à la carte principale, la position de la mini-carte est centrée 
 Même principe que pour `MuralMap`, on utilise `onMapIsReady` pour placer un marqueur. On affiche ici un marqueur unique à la position de la fresque.
 
 ```dart
-void _onMiniMapReady(bool isReady) {
+Future<void> _onMiniMapReady(bool isReady) async {
   if (!isReady) return;
-  _miniMapController.addMarker(
+  await _miniMapController.addMarker(
     GeoPoint(
       latitude: widget.mural.latitude,
       longitude: widget.mural.longitude,
     ),
     markerIcon: const MarkerIcon(
-      icon: Icon(Icons.place, color: Colors.red, size: 32),
+      iconWidget: SizedBox.square(
+        dimension: 48,
+        child: Icon(Icons.place, color: Colors.red, size: 48),
+      ),
     ),
   );
 }
@@ -834,6 +840,7 @@ Future<void> _locateUser() async {
 }
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   _locateUser();
   runApp(const MuralMapApp());
 }
@@ -855,13 +862,16 @@ class MuralScreen extends StatefulWidget {
 // à la fin de la méthode _onMiniMapReady, après avoir ajouté le marqueur de la fresque
 final userPosition = widget.userPosition;
 if (userPosition != null) {
-  _miniMapController.addMarker(
+  await _miniMapController.addMarker(
     GeoPoint(
       latitude: userPosition.latitude,
       longitude: userPosition.longitude,
     ),
     markerIcon: const MarkerIcon(
-      icon: Icon(Icons.my_location, color: Colors.blue, size: 32),
+      iconWidget: SizedBox.square(
+        dimension: 48,
+        child: Icon(Icons.my_location, color: Colors.blue, size: 48),
+      ),
     ),
   );
 }
