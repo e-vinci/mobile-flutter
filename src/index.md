@@ -24,8 +24,8 @@ Au cours de ces fiches, nous verrons différentes compétences. Le tableau suiva
 | F09         | Parsing de JSON                 | [fiche 5](posts/fiche-5/) |
 | F10         | Shared Preferences              | [fiche 6](posts/fiche-6/) |
 | F11         | DB sqlite                       | [fiche 6](posts/fiche-6/) |
-| F12         | Envoi de SMS                    | [fiche 7](posts/fiche-7/) |
-| F13         | Récupération de la localisation | [fiche 7](posts/fiche-7/) |
+| F12         | Intégration d'une carte OpenStreetMap | [fiche 7](posts/fiche-7/) |
+| F13         | Localisation de l'utilisateur   | [fiche 7](posts/fiche-7/) |
 | F14         | Fichiers                        | [fiche 8](posts/fiche-8/) |
 | F15         | Déploiement                     | [fiche 8](posts/fiche-8/) |
 
